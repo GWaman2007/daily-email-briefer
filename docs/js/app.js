@@ -11,7 +11,7 @@ import {
     getSessionKeys,
     lockVault,
     clearVault
-} from './vault.js?v=2.0.3';
+} from './vault.js?v=2.0.4';
 
 import {
     initDb,
@@ -23,9 +23,9 @@ import {
     deleteEvent,
     fetchBriefs,
     fetchBriefById
-} from './db.js?v=2.0.3';
+} from './db.js?v=2.0.4';
 
-import { processTuningMessage } from './chat.js?v=2.0.3';
+import { processTuningMessage } from './chat.js?v=2.0.4';
 
 // Global application state
 let currentProfile = null;
