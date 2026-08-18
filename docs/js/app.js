@@ -718,13 +718,22 @@ function closeUnlockModal() {
 
 function openVaultConfigModal() {
     const keys = getSessionKeys();
-    if (keys) {
-        elements.cfgSupabaseUrl.value = keys.supabaseUrl || '';
-        elements.cfgSupabaseAnonKey.value = keys.supabaseAnonKey || '';
-        elements.cfgGeminiKey.value = keys.geminiApiKey || '';
-        elements.cfgGithubPat.value = keys.githubPat || '';
-        elements.cfgGithubRepo.value = keys.githubRepo || '';
-    }
+    // Auto-detect GitHub repo from URL if on github.io
+    let defaultRepo = 'GWaman2007/daily-email-briefer';
+    try {
+        if (window.location.hostname.endsWith('.github.io')) {
+            const user = window.location.hostname.split('.')[0];
+            const repo = window.location.pathname.split('/').filter(Boolean)[0];
+            if (user && repo) defaultRepo = `${user}/${repo}`;
+        }
+    } catch (e) {}
+
+    elements.cfgSupabaseUrl.value = keys?.supabaseUrl || '';
+    elements.cfgSupabaseAnonKey.value = keys?.supabaseAnonKey || '';
+    elements.cfgGeminiKey.value = keys?.geminiApiKey || '';
+    elements.cfgGithubPat.value = keys?.githubPat || '';
+    elements.cfgGithubRepo.value = keys?.githubRepo || defaultRepo;
+
     elements.modalVaultConfig.classList.remove('hidden');
 }
 function closeVaultConfigModal() {
