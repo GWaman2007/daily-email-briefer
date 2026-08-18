@@ -13,6 +13,7 @@ export function initDb(supabaseUrl, supabaseAnonKey) {
         throw new Error('Supabase JS library not loaded. Please ensure script tag is present.');
     }
     supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    window.__dailyBrieferDb = supabaseClient;
     return supabaseClient;
 }
 
@@ -20,10 +21,11 @@ export function initDb(supabaseUrl, supabaseAnonKey) {
  * Ensure database client is initialized.
  */
 function getClient() {
-    if (!supabaseClient) {
+    const client = supabaseClient || window.__dailyBrieferDb;
+    if (!client) {
         throw new Error('Database client not initialized. Please unlock your vault first.');
     }
-    return supabaseClient;
+    return client;
 }
 
 /**
