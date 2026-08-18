@@ -11,7 +11,7 @@ import {
     getSessionKeys,
     lockVault,
     clearVault
-} from './vault.js?v=2.0.2';
+} from './vault.js?v=2.0.3';
 
 import {
     initDb,
@@ -23,9 +23,9 @@ import {
     deleteEvent,
     fetchBriefs,
     fetchBriefById
-} from './db.js?v=2.0.2';
+} from './db.js?v=2.0.3';
 
-import { processTuningMessage } from './chat.js?v=2.0.2';
+import { processTuningMessage } from './chat.js?v=2.0.3';
 
 // Global application state
 let currentProfile = null;
@@ -173,10 +173,10 @@ async function onVaultUnlocked() {
     if (!keys) return;
 
     // Update Nav status
-    elements.vaultStatusText.textContent = 'Vault Unlocked';
-    elements.vaultIcon.className = 'w-4 h-4 mr-1.5 text-emerald-400';
-    elements.vaultLockedNotice.classList.add('hidden');
-    elements.dashboardDeck.classList.remove('hidden');
+    if (elements.vaultStatusText) elements.vaultStatusText.textContent = 'Vault Unlocked';
+    if (elements.vaultIcon) elements.vaultIcon.setAttribute('class', 'w-4 h-4 mr-1.5 text-emerald-400');
+    if (elements.vaultLockedNotice) elements.vaultLockedNotice.classList.add('hidden');
+    if (elements.dashboardDeck) elements.dashboardDeck.classList.remove('hidden');
 
     try {
         initDb(keys.supabaseUrl, keys.supabaseAnonKey);
@@ -502,10 +502,10 @@ function setupEventListeners() {
     elements.btnVaultControl.onclick = () => {
         if (isSessionUnlocked()) {
             lockVault();
-            elements.vaultStatusText.textContent = 'Vault Locked';
-            elements.vaultIcon.className = 'w-4 h-4 mr-1.5 text-amber-400';
-            elements.dashboardDeck.classList.add('hidden');
-            elements.vaultLockedNotice.classList.remove('hidden');
+            if (elements.vaultStatusText) elements.vaultStatusText.textContent = 'Vault Locked';
+            if (elements.vaultIcon) elements.vaultIcon.setAttribute('class', 'w-4 h-4 mr-1.5 text-amber-400');
+            if (elements.dashboardDeck) elements.dashboardDeck.classList.add('hidden');
+            if (elements.vaultLockedNotice) elements.vaultLockedNotice.classList.remove('hidden');
             showToast('Session locked. Keys cleared from ephemeral memory.', 'info');
         } else {
             openUnlockModal();
