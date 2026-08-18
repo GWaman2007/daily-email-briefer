@@ -11,7 +11,7 @@ import {
     getSessionKeys,
     lockVault,
     clearVault
-} from './vault.js';
+} from './vault.js?v=2.0.2';
 
 import {
     initDb,
@@ -23,9 +23,9 @@ import {
     deleteEvent,
     fetchBriefs,
     fetchBriefById
-} from './db.js';
+} from './db.js?v=2.0.2';
 
-import { processTuningMessage } from './chat.js';
+import { processTuningMessage } from './chat.js?v=2.0.2';
 
 // Global application state
 let currentProfile = null;
@@ -537,17 +537,30 @@ function setupEventListeners() {
 
     elements.formVaultConfig.onsubmit = async (e) => {
         e.preventDefault();
+        const supabaseUrl = elements.cfgSupabaseUrl?.value?.trim() || '';
+        const supabaseAnonKey = elements.cfgSupabaseAnonKey?.value?.trim() || '';
+        const geminiApiKey = elements.cfgGeminiKey?.value?.trim() || '';
+        const passphrase = elements.cfgMasterPassphrase?.value || '';
+
+        if (!supabaseUrl || !supabaseAnonKey || !geminiApiKey) {
+            showToast('Please fill in Supabase URL, Anon Key, and Gemini API Key.', 'warning');
+            return;
+        }
+        if (!passphrase || passphrase.length < 4) {
+            showToast('Master passphrase must be at least 4 characters long.', 'warning');
+            return;
+        }
+
         const payload = {
-            supabaseUrl: elements.cfgSupabaseUrl.value.trim(),
-            supabaseAnonKey: elements.cfgSupabaseAnonKey.value.trim(),
-            geminiApiKey: elements.cfgGeminiKey.value.trim(),
+            supabaseUrl,
+            supabaseAnonKey,
+            geminiApiKey,
         };
-        const passphrase = elements.cfgMasterPassphrase.value;
 
         try {
             await encryptVault(passphrase, payload);
             closeVaultConfigModal();
-            elements.cfgMasterPassphrase.value = '';
+            if (elements.cfgMasterPassphrase) elements.cfgMasterPassphrase.value = '';
             showToast('Credentials encrypted and stored successfully!', 'success');
             onVaultUnlocked();
         } catch (err) {
