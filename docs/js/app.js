@@ -95,8 +95,6 @@ const elements = {
     cfgSupabaseUrl: document.getElementById('cfgSupabaseUrl'),
     cfgSupabaseAnonKey: document.getElementById('cfgSupabaseAnonKey'),
     cfgGeminiKey: document.getElementById('cfgGeminiKey'),
-    cfgGithubPat: document.getElementById('cfgGithubPat'),
-    cfgGithubRepo: document.getElementById('cfgGithubRepo'),
     cfgMasterPassphrase: document.getElementById('cfgMasterPassphrase'),
     btnClearStoredVault: document.getElementById('btnClearStoredVault'),
 
@@ -384,48 +382,11 @@ function switchBriefTab(tab) {
 }
 
 /**
- * Trigger GitHub Actions workflow_dispatch via REST API.
+ * Trigger GitHub Actions workflow dispatch.
  */
-async function triggerWorkflowDispatch() {
-    const keys = getSessionKeys();
-    if (!keys || !keys.githubPat || !keys.githubRepo) {
-        showToast('Please configure GitHub PAT and Repository in Vault settings.', 'warning');
-        openVaultConfigModal();
-        return;
-    }
-
-    elements.btnTriggerDispatch.disabled = true;
-    elements.triggerIcon.classList.add('animate-spin');
-    elements.triggerText.textContent = 'Dispatching Runner...';
-
-    const url = `https://api.github.com/repos/${keys.githubRepo}/actions/workflows/daily-brief.yml/dispatches`;
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${keys.githubPat}`,
-                'Accept': 'application/vnd.github+json',
-                'X-GitHub-Api-Version': '2022-11-28',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ ref: 'main' }),
-        });
-
-        if (response.status === 204) {
-            showToast(`Workflow dispatched successfully! Runner started on ${keys.githubRepo}.`, 'success');
-        } else {
-            const errText = await response.text();
-            throw new Error(`GitHub API HTTP ${response.status}: ${errText}`);
-        }
-    } catch (err) {
-        console.error('Dispatch failed:', err);
-        showToast(`Workflow dispatch error: ${err.message}`, 'error');
-    } finally {
-        elements.btnTriggerDispatch.disabled = false;
-        elements.triggerIcon.classList.remove('animate-spin');
-        elements.triggerText.textContent = 'Trigger Brief Now';
-    }
+function triggerWorkflowDispatch() {
+    window.open('https://github.com/GWaman2007/daily-email-briefer/actions/workflows/daily-brief.yml', '_blank');
+    showToast('Opened GitHub Actions runner page. Click "Run workflow" to execute immediately.', 'info');
 }
 
 /**
@@ -580,8 +541,6 @@ function setupEventListeners() {
             supabaseUrl: elements.cfgSupabaseUrl.value.trim(),
             supabaseAnonKey: elements.cfgSupabaseAnonKey.value.trim(),
             geminiApiKey: elements.cfgGeminiKey.value.trim(),
-            githubPat: elements.cfgGithubPat.value.trim(),
-            githubRepo: elements.cfgGithubRepo.value.trim(),
         };
         const passphrase = elements.cfgMasterPassphrase.value;
 
@@ -718,22 +677,9 @@ function closeUnlockModal() {
 
 function openVaultConfigModal() {
     const keys = getSessionKeys();
-    // Auto-detect GitHub repo from URL if on github.io
-    let defaultRepo = 'GWaman2007/daily-email-briefer';
-    try {
-        if (window.location.hostname.endsWith('.github.io')) {
-            const user = window.location.hostname.split('.')[0];
-            const repo = window.location.pathname.split('/').filter(Boolean)[0];
-            if (user && repo) defaultRepo = `${user}/${repo}`;
-        }
-    } catch (e) {}
-
     elements.cfgSupabaseUrl.value = keys?.supabaseUrl || '';
     elements.cfgSupabaseAnonKey.value = keys?.supabaseAnonKey || '';
     elements.cfgGeminiKey.value = keys?.geminiApiKey || '';
-    elements.cfgGithubPat.value = keys?.githubPat || '';
-    elements.cfgGithubRepo.value = keys?.githubRepo || defaultRepo;
-
     elements.modalVaultConfig.classList.remove('hidden');
 }
 function closeVaultConfigModal() {
