@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DailyBriefer v2 — AI Intelligence Dashboard</title>
+    <meta name="description" content="Serverless, zero-maintenance AI news intelligence system with client-side encrypted vault and custom persona synthesis.">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            cyan: '#38bdf8',
+                            purple: '#a855f7',
+                            dark: '#090d16',
+                            card: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+
+    <!-- Top Navbar -->
+    <header class="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand -->
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="text-base font-bold tracking-tight text-white font-heading">DailyBriefer <span class="text-xs px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-mono font-medium border border-cyan-500/30">v2</span></h1>
+                        <span id="navStatusBadge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> Active
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 hidden sm:block">Serverless AI News Intelligence</p>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center space-x-3">
+                <!-- Trigger Brief Now -->
+                <button id="btnTriggerDispatch" class="inline-flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg id="triggerIcon" class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span id="triggerText">Trigger Brief Now</span>
+                </button>
+
+                <!-- Vault Status / Action -->
+                <button id="btnVaultControl" class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-700 hover:border-slate-600 text-slate-200 hover:text-white transition">
+                    <svg id="vaultIcon" class="w-4 h-4 mr-1.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    <span id="vaultStatusText">Vault Locked</span>
+                </button>
+
+                <!-- Vault Settings Modal Trigger -->
+                <button id="btnOpenVaultSettings" title="Vault Settings" class="p-2 rounded-lg bg-slate-900 border border-slate-700 hover:border-slate-600 text-slate-400 hover:text-slate-200 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Vault Locked State Notice -->
+        <div id="vaultLockedNotice" class="mb-6 p-6 rounded-2xl glass-panel-glow text-center">
+            <div class="w-12 h-12 rounded-full bg-cyan-500/10 text-cyan-400 mx-auto flex items-center justify-center mb-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+            <h2 class="text-lg font-bold text-white font-heading">Encrypted Client Vault is Locked</h2>
+            <p class="text-sm text-slate-400 max-w-md mx-auto mt-1 mb-4">
+                Unlock your zero-trust browser vault to load your Supabase persistence, tuning AI chat, and dispatch controls.
+            </p>
+            <button id="btnPromptUnlock" class="px-5 py-2 rounded-xl text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-500/25 transition">
+                Unlock Vault with Passphrase
+            </button>
+        </div>
+
+        <!-- Dashboard Deck (Rendered when Unlocked) -->
+        <div id="dashboardDeck" class="hidden space-y-6">
+            
+            <!-- Top Metric & Quick Status Strip -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Delivery Status -->
+                <div class="glass-panel p-4 rounded-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-400 font-medium">Daily Pipeline State</p>
+                        <p id="statActiveState" class="text-sm font-bold text-emerald-400 mt-0.5">Active & Running</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggleActiveStatus" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+
+                <!-- Recipient Email -->
+                <div class="glass-panel p-4 rounded-xl">
+                    <p class="text-xs text-slate-400 font-medium">Recipient Address</p>
+                    <p id="statRecipientEmail" class="text-sm font-semibold text-slate-100 truncate mt-0.5 font-mono">Loading...</p>
+                </div>
+
+                <!-- Persona Tone -->
+                <div class="glass-panel p-4 rounded-xl">
+                    <p class="text-xs text-slate-400 font-medium">Persona Tone</p>
+                    <p id="statPersonaTone" class="text-sm font-semibold text-purple-300 truncate mt-0.5">Analytical & Direct</p>
+                </div>
+
+                <!-- Active Milestones -->
+                <div class="glass-panel p-4 rounded-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-400 font-medium">Active Milestones</p>
+                        <p id="statEventCount" class="text-sm font-bold text-cyan-400 mt-0.5">0 Active</p>
+                    </div>
+                    <button id="btnQuickAddEvent" class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 transition" title="Add Milestone">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Two-Column Primary Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Column: Preference Tuning & Events (7 cols) -->
+                <div class="lg:col-span-7 space-y-6">
+                    
+                    <!-- AI Conversational Tuning Drawer -->
+                    <div class="glass-panel p-5 rounded-2xl flex flex-col h-[480px]">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-white font-heading">AI Persona & Preference Tuning</h3>
+                                    <p class="text-xs text-slate-400">Direct conversational adjustments via Gemini</p>
+                                </div>
+                            </div>
+                            <span class="text-xs text-purple-400/80 font-mono">Live DB Sync</span>
+                        </div>
+
+                        <!-- Chat Message History -->
+                        <div id="chatHistory" class="flex-1 overflow-y-auto py-3 space-y-3 pr-1 text-sm">
+                            <div class="flex items-start space-x-2">
+                                <div class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-400 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">AI</div>
+                                <div class="p-3 rounded-2xl rounded-tl-none bg-slate-900/90 border border-slate-800 text-slate-200 text-xs leading-relaxed max-w-[88%]">
+                                    Hi! I synthesize your daily briefing. Tell me what topics to emphasize, change writing tone, or mention upcoming events (e.g. <em>"Add Apple Event on Sept 9"</em> or <em>"Focus more on open-source LLMs with an executive tone"</em>).
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Suggestion Chips -->
+                        <div class="py-2 flex items-center space-x-2 overflow-x-auto text-xs scrollbar-none">
+                            <button class="chat-chip px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 whitespace-nowrap transition">
+                                ⚡ More AI reasoning & agents
+                            </button>
+                            <button class="chat-chip px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 whitespace-nowrap transition">
+                                🎯 Witty & concise tone
+                            </button>
+                            <button class="chat-chip px-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 whitespace-nowrap transition">
+                                📅 Add key milestone date
+                            </button>
+                        </div>
+
+                        <!-- Chat Input Bar -->
+                        <form id="chatForm" class="pt-2 flex items-center space-x-2 border-t border-slate-800/80">
+                            <input type="text" id="chatInput" placeholder="Instruct AI to adjust preferences or dates..." class="flex-1 px-3.5 py-2 text-xs rounded-xl glass-input placeholder-slate-500">
+                            <button type="submit" id="btnSendChat" class="px-4 py-2 rounded-xl text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white transition flex items-center space-x-1 disabled:opacity-50">
+                                <span>Send</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Milestone Events Deck -->
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-white font-heading">Upcoming Milestones & Reminders</h3>
+                                    <p class="text-xs text-slate-400">Injected into daily email briefs</p>
+                                </div>
+                            </div>
+                            <button id="btnOpenAddEventModal" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 transition">
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Add Milestone
+                            </button>
+                        </div>
+
+                        <!-- Active Events List -->
+                        <div id="activeEventsContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                            <div class="text-center py-6 text-xs text-slate-500">No active milestones configured.</div>
+                        </div>
+
+                        <!-- Expired Events Accordion -->
+                        <details class="group text-xs border-t border-slate-800/80 pt-3">
+                            <summary class="cursor-pointer text-slate-500 hover:text-slate-300 font-medium flex items-center justify-between select-none">
+                                <span>Past / Expired Milestones</span>
+                                <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </summary>
+                            <div id="expiredEventsContainer" class="mt-3 space-y-1.5 max-h-36 overflow-y-auto text-slate-400">
+                                <div class="text-slate-600 italic">No expired milestones.</div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <!-- Direct Profile Configuration Accordion -->
+                    <div class="glass-panel p-5 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-bold text-white font-heading">Manual Profile & Engine Settings</h3>
+                            <button id="btnSaveProfileDirect" class="px-3 py-1 text-xs font-semibold rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition">
+                                Save Settings
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <div>
+                                <label class="block text-slate-400 mb-1">Recipient Email</label>
+                                <input type="email" id="inputRecipientEmail" class="w-full px-3 py-1.5 rounded-lg glass-input text-xs">
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Persona Tone</label>
+                                <input type="text" id="inputPersonaTone" class="w-full px-3 py-1.5 rounded-lg glass-input text-xs" placeholder="e.g. Analytical & Direct">
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Primary LLM Model</label>
+                                <input type="text" id="inputPrimaryModel" class="w-full px-3 py-1.5 rounded-lg glass-input text-xs font-mono" value="gemini-3.5-flash-lite">
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Fallback LLM Model</label>
+                                <input type="text" id="inputFallbackModel" class="w-full px-3 py-1.5 rounded-lg glass-input text-xs font-mono" value="gemini-3.1-flash-lite">
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Tavily Search Topic</label>
+                                <select id="selectSearchTopic" class="w-full px-3 py-1.5 rounded-lg glass-input text-xs bg-slate-900">
+                                    <option value="news">news</option>
+                                    <option value="general">general</option>
+                                    <option value="finance">finance</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-400 mb-1">Tavily Search Depth</label>
+                                <select id="selectSearchDepth" class="w-full px-3 py-1.5 rounded-lg glass-input text-xs bg-slate-900">
+                                    <option value="basic">basic</option>
+                                    <option value="advanced">advanced</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Preferences & Focus Summary (Direct Edit)</label>
+                            <textarea id="inputPreferencesSummary" rows="3" class="w-full px-3 py-2 rounded-lg glass-input text-xs leading-relaxed"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Briefs Archive Feed (5 cols) -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="glass-panel p-5 rounded-2xl flex flex-col h-full min-h-[550px]">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-white font-heading">Historical Briefs Archive</h3>
+                                    <p class="text-xs text-slate-400">Past generated intelligence digests</p>
+                                </div>
+                            </div>
+                            <button id="btnRefreshBriefs" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition" title="Refresh Briefs">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Briefs Archive List -->
+                        <div id="briefsListContainer" class="flex-1 overflow-y-auto py-3 space-y-2.5 pr-1 text-xs">
+                            <div class="text-center py-10 text-slate-500">Loading historical briefs...</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Modal: Vault Passphrase Unlock -->
+    <div id="modalUnlockVault" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+        <div class="w-full max-w-md p-6 rounded-2xl glass-panel-glow space-y-4">
+            <div class="text-center">
+                <div class="w-12 h-12 rounded-full bg-cyan-500/10 text-cyan-400 mx-auto flex items-center justify-center mb-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h3 class="text-base font-bold text-white font-heading">Unlock DailyBriefer Vault</h3>
+                <p class="text-xs text-slate-400 mt-1">Enter your master passphrase to decrypt session keys into RAM.</p>
+            </div>
+
+            <form id="formUnlockVault" class="space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Master Passphrase</label>
+                    <input type="password" id="inputUnlockPassphrase" required autofocus placeholder="••••••••" class="w-full px-3.5 py-2 text-sm rounded-xl glass-input">
+                </div>
+                <div id="unlockErrorMsg" class="text-xs text-rose-400 hidden"></div>
+                <div class="flex items-center justify-between pt-2">
+                    <button type="button" id="btnSwitchToVaultConfig" class="text-xs text-cyan-400 hover:underline">
+                        Reconfigure Credentials
+                    </button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition">
+                        Unlock
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Vault Credential Configuration -->
+    <div id="modalVaultConfig" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+        <div class="w-full max-w-lg p-6 rounded-2xl glass-panel space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                <h3 class="text-base font-bold text-white font-heading">Vault Keyring Setup</h3>
+                <button id="btnCloseVaultConfig" class="text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed">
+                Credentials are encrypted client-side using <strong>PBKDF2 (100,000 iterations) + AES-GCM-256</strong>. They never touch any server in plaintext.
+            </p>
+
+            <form id="formVaultConfig" class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1">Supabase Project URL</label>
+                    <input type="url" id="cfgSupabaseUrl" required placeholder="https://xyzcompany.supabase.co" class="w-full px-3 py-2 rounded-lg glass-input">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1">Supabase Public Anon Key</label>
+                    <input type="text" id="cfgSupabaseAnonKey" required placeholder="eyJhbGciOiJIUzI1NiIsIn..." class="w-full px-3 py-2 rounded-lg glass-input font-mono">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1">Google Gemini API Key (Client Chat Tuning)</label>
+                    <input type="password" id="cfgGeminiKey" required placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-lg glass-input font-mono">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1">GitHub PAT (fine-grained with `actions:write` scope)</label>
+                    <input type="password" id="cfgGithubPat" required placeholder="github_pat_..." class="w-full px-3 py-2 rounded-lg glass-input font-mono">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1">GitHub Repository (`owner/repo`)</label>
+                    <input type="text" id="cfgGithubRepo" required placeholder="username/DailyBrieferv2" class="w-full px-3 py-2 rounded-lg glass-input">
+                </div>
+                <div class="border-t border-slate-800 pt-3">
+                    <label class="block text-slate-300 font-semibold mb-1">Set Master Passphrase</label>
+                    <input type="password" id="cfgMasterPassphrase" required placeholder="Minimum 4 characters" class="w-full px-3 py-2 rounded-lg glass-input">
+                </div>
+
+                <div class="flex items-center justify-between pt-3">
+                    <button type="button" id="btnClearStoredVault" class="text-xs text-rose-400 hover:text-rose-300">
+                        Clear Vault Storage
+                    </button>
+                    <button type="submit" class="px-5 py-2 rounded-xl text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition">
+                        Encrypt & Save Vault
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Add Milestone Event -->
+    <div id="modalAddEvent" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+        <div class="w-full max-w-sm p-6 rounded-2xl glass-panel space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                <h3 class="text-sm font-bold text-white font-heading">Add Milestone Reminder</h3>
+                <button id="btnCloseAddEvent" class="text-slate-400 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="formAddEvent" class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1">Milestone Title</label>
+                    <input type="text" id="inputEventTitle" required placeholder="e.g. Apple Keynote, Q3 Earnings" class="w-full px-3 py-2 rounded-lg glass-input">
+                </div>
+                <div>
+                    <label class="block text-slate-400 mb-1">Target Date</label>
+                    <input type="date" id="inputEventDate" required class="w-full px-3 py-2 rounded-lg glass-input">
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" id="btnCancelAddEvent" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold">
+                        Add Event
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Brief Inspector (HTML Preview & Source) -->
+    <div id="modalInspectBrief" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+        <div class="w-full max-w-4xl p-6 rounded-2xl glass-panel space-y-4 max-h-[95vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div class="truncate mr-4">
+                    <h3 id="inspectBriefSubject" class="text-base font-bold text-white font-heading truncate">Digest Preview</h3>
+                    <p id="inspectBriefDate" class="text-xs text-slate-400 font-mono">Date</p>
+                </div>
+                <div class="flex items-center space-x-2 flex-shrink-0">
+                    <!-- Tab Switchers -->
+                    <div class="flex rounded-lg bg-slate-900 p-1 border border-slate-800 text-xs">
+                        <button id="btnTabRendered" class="px-3 py-1 rounded-md bg-cyan-500/20 text-cyan-400 font-semibold">Preview</button>
+                        <button id="btnTabRaw" class="px-3 py-1 rounded-md text-slate-400 hover:text-white">Raw HTML</button>
+                    </div>
+                    <button id="btnCloseInspectBrief" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="flex-1 overflow-hidden min-h-[500px]">
+                <iframe id="briefIframe" class="email-preview-frame w-full h-full border border-slate-800 rounded-xl"></iframe>
+                <pre id="briefRawCode" class="hidden w-full h-full p-4 bg-slate-900 text-slate-300 font-mono text-xs overflow-auto rounded-xl border border-slate-800 select-all"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Root -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 max-w-sm pointer-events-none"></div>
+
+    <!-- Application Script Entrypoint -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
