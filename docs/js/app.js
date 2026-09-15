@@ -122,18 +122,18 @@ const elements = {
  */
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    toast.className = `toast pointer-events-auto p-3.5 rounded-xl shadow-lg border text-xs font-medium flex items-center justify-between space-x-3 transition-all duration-300 ${
-        type === 'success' ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-200' :
-        type === 'error' ? 'bg-rose-950/90 border-rose-500/30 text-rose-200' :
-        type === 'warning' ? 'bg-amber-950/90 border-amber-500/30 text-amber-200' :
-        'bg-slate-900/90 border-slate-700 text-slate-200'
+    toast.className = `toast pointer-events-auto p-3.5 rounded-lg shadow-md border text-xs font-medium flex items-center justify-between space-x-3 transition-all duration-300 ${
+        type === 'success' ? 'bg-white border-[#c3dfc3] text-[#286638]' :
+        type === 'error' ? 'bg-white border-[#ffe2dd] text-[#c4554d]' :
+        type === 'warning' ? 'bg-white border-[#faebdd] text-[#d9730d]' :
+        'bg-white border-[#e9e9e7] text-[#2f3437]'
     }`;
 
     toast.innerHTML = `
         <div class="flex items-center space-x-2">
             <span>${message}</span>
         </div>
-        <button class="text-slate-400 hover:text-white">&times;</button>
+        <button class="text-[#787774] hover:text-[#2f3437] font-semibold text-sm">&times;</button>
     `;
 
     toast.querySelector('button').onclick = () => toast.remove();
@@ -174,7 +174,7 @@ async function onVaultUnlocked() {
 
     // Update Nav status
     if (elements.vaultStatusText) elements.vaultStatusText.textContent = 'Vault Unlocked';
-    if (elements.vaultIcon) elements.vaultIcon.setAttribute('class', 'w-4 h-4 mr-1.5 text-emerald-400');
+    if (elements.vaultIcon) elements.vaultIcon.setAttribute('class', 'w-3.5 h-3.5 mr-1.5 text-[#286638]');
     if (elements.vaultLockedNotice) elements.vaultLockedNotice.classList.add('hidden');
     if (elements.dashboardDeck) elements.dashboardDeck.classList.remove('hidden');
 
@@ -214,7 +214,7 @@ async function loadProfileData() {
         const isActive = currentProfile.is_active !== false;
         elements.toggleActiveStatus.checked = isActive;
         elements.statActiveState.textContent = isActive ? 'Active & Running' : 'Paused';
-        elements.statActiveState.className = isActive ? 'text-sm font-bold text-emerald-400 mt-0.5' : 'text-sm font-bold text-slate-500 mt-0.5';
+        elements.statActiveState.className = isActive ? 'text-sm font-semibold text-[#286638] mt-1' : 'text-sm font-semibold text-[#9b9a97] mt-1';
 
         elements.statRecipientEmail.textContent = currentProfile.recipient_email || 'Not configured';
         elements.statPersonaTone.textContent = currentProfile.persona_tone || 'Analytical & Direct';
@@ -246,7 +246,7 @@ async function loadEventsData() {
 
         // Render active events
         if (activeEvents.length === 0) {
-            elements.activeEventsContainer.innerHTML = '<div class="text-center py-6 text-xs text-slate-500">No active milestones configured.</div>';
+            elements.activeEventsContainer.innerHTML = '<div class="text-center py-6 text-xs text-[#9b9a97]">No active milestones configured.</div>';
         } else {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -258,24 +258,24 @@ async function loadEventsData() {
 
                 let badge = '';
                 if (diffDays === 0) {
-                    badge = '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse">TODAY!</span>';
+                    badge = '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-[#ffe2dd] text-[#c4554d] border border-[#f5c6cb] animate-pulse">TODAY!</span>';
                 } else if (diffDays === 1) {
-                    badge = '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">Tomorrow</span>';
+                    badge = '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-[#faebdd] text-[#d9730d] border border-[#f5d9bc]">Tomorrow</span>';
                 } else if (diffDays > 1) {
-                    badge = `<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/20">in ${diffDays} days</span>`;
+                    badge = `<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#d3e5ef] text-[#185b8c] border border-[#b8d5e8]">in ${diffDays} days</span>`;
                 } else {
-                    badge = '<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-slate-800 text-slate-500">Passed</span>';
+                    badge = '<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#f1f1ef] text-[#787774]">Passed</span>';
                 }
 
                 return `
-                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition">
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#fcfbf9] border border-[#e9e9e7] hover:border-[#d3d2cf] transition">
                         <div class="flex items-center space-x-2.5 truncate mr-2">
-                            <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-                            <span class="font-medium text-slate-200 truncate">${escapeHtml(ev.title)}</span>
-                            <span class="text-slate-500 text-[11px] font-mono">(${ev.event_date})</span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#2f3437]"></span>
+                            <span class="font-medium text-[#2f3437] truncate">${escapeHtml(ev.title)}</span>
+                            <span class="text-[#787774] text-[11px] font-mono">(${ev.event_date})</span>
                             ${badge}
                         </div>
-                        <button data-delete-event="${ev.id}" class="p-1 rounded-md text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition" title="Delete Milestone">
+                        <button data-delete-event="${ev.id}" class="p-1 rounded text-[#787774] hover:text-[#c4554d] hover:bg-[#ffe2dd]/50 transition" title="Delete Milestone">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
@@ -287,12 +287,12 @@ async function loadEventsData() {
 
         // Render expired events
         if (expiredEvents.length === 0) {
-            elements.expiredEventsContainer.innerHTML = '<div class="text-slate-600 italic">No expired milestones.</div>';
+            elements.expiredEventsContainer.innerHTML = '<div class="text-[#9b9a97] italic">No expired milestones.</div>';
         } else {
             elements.expiredEventsContainer.innerHTML = expiredEvents.map(ev => `
-                <div class="flex items-center justify-between py-1 px-2 rounded hover:bg-slate-900">
-                    <span class="line-through text-slate-500">${escapeHtml(ev.title)}</span>
-                    <span class="text-slate-600 text-[10px] font-mono">${ev.event_date}</span>
+                <div class="flex items-center justify-between py-1 px-2 rounded hover:bg-[#f7f6f5]">
+                    <span class="line-through text-[#9b9a97]">${escapeHtml(ev.title)}</span>
+                    <span class="text-[#9b9a97] text-[10px] font-mono">${ev.event_date}</span>
                 </div>
             `).join('');
         }
@@ -309,7 +309,7 @@ async function loadBriefsData() {
     try {
         const briefs = await fetchBriefs(20, 0);
         if (briefs.length === 0) {
-            elements.briefsListContainer.innerHTML = '<div class="text-center py-10 text-slate-500">No historical briefs generated yet. Trigger your first brief to see digests!</div>';
+            elements.briefsListContainer.innerHTML = '<div class="text-center py-10 text-[#9b9a97]">No historical briefs generated yet. Trigger your first brief to see digests!</div>';
             return;
         }
 
@@ -322,19 +322,19 @@ async function loadBriefsData() {
             });
 
             return `
-                <div data-brief-id="${b.id}" class="brief-item p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 hover:bg-slate-900 transition cursor-pointer group">
+                <div data-brief-id="${b.id}" class="brief-item p-3 rounded-lg bg-[#fcfbf9] border border-[#e9e9e7] hover:border-[#2f3437] hover:bg-white transition cursor-pointer group shadow-2xs">
                     <div class="flex items-center justify-between mb-1">
-                        <span class="text-[10px] font-mono text-cyan-400">${dateStr}</span>
-                        <span class="text-[10px] text-slate-500 group-hover:text-cyan-300 transition">View Digest →</span>
+                        <span class="text-[10px] font-mono text-[#787774]">${dateStr}</span>
+                        <span class="text-[10px] text-[#787774] group-hover:text-[#2f3437] font-medium transition">View Digest →</span>
                     </div>
-                    <h4 class="font-medium text-slate-200 group-hover:text-white line-clamp-2 leading-snug">${escapeHtml(b.subject)}</h4>
+                    <h4 class="font-medium text-[#2f3437] line-clamp-2 leading-snug">${escapeHtml(b.subject)}</h4>
                 </div>
             `;
         }).join('');
 
     } catch (err) {
         console.error('Error loading briefs:', err);
-        elements.briefsListContainer.innerHTML = `<div class="text-rose-400 text-center py-6">Failed to load briefs: ${err.message}</div>`;
+        elements.briefsListContainer.innerHTML = `<div class="text-[#c4554d] text-center py-6">Failed to load briefs: ${err.message}</div>`;
     }
 }
 
@@ -369,13 +369,13 @@ async function openBriefModal(briefId) {
 
 function switchBriefTab(tab) {
     if (tab === 'rendered') {
-        elements.btnTabRendered.className = 'px-3 py-1 rounded-md bg-cyan-500/20 text-cyan-400 font-semibold';
-        elements.btnTabRaw.className = 'px-3 py-1 rounded-md text-slate-400 hover:text-white';
+        elements.btnTabRendered.className = 'px-3 py-1 rounded bg-white text-[#2f3437] shadow-2xs font-medium';
+        elements.btnTabRaw.className = 'px-3 py-1 rounded text-[#787774] hover:text-[#2f3437]';
         elements.briefIframe.classList.remove('hidden');
         elements.briefRawCode.classList.add('hidden');
     } else {
-        elements.btnTabRaw.className = 'px-3 py-1 rounded-md bg-cyan-500/20 text-cyan-400 font-semibold';
-        elements.btnTabRendered.className = 'px-3 py-1 rounded-md text-slate-400 hover:text-white';
+        elements.btnTabRaw.className = 'px-3 py-1 rounded bg-white text-[#2f3437] shadow-2xs font-medium';
+        elements.btnTabRendered.className = 'px-3 py-1 rounded text-[#787774] hover:text-[#2f3437]';
         elements.briefRawCode.classList.remove('hidden');
         elements.briefIframe.classList.add('hidden');
     }
@@ -440,26 +440,26 @@ async function handleChatSubmit(e) {
 function appendChatMessage(sender, text) {
     const div = document.createElement('div');
     if (sender === 'user') {
-        div.className = 'flex items-start justify-end space-x-2';
+        div.className = 'flex items-start justify-end space-x-2.5';
         div.innerHTML = `
-            <div class="p-3 rounded-2xl rounded-tr-none bg-purple-600/30 border border-purple-500/40 text-purple-100 text-xs leading-relaxed max-w-[85%]">
+            <div class="p-3.5 rounded-xl rounded-tr-sm bg-[#eae4f2] border border-[#d8cee6] text-[#2f3437] text-xs leading-relaxed max-w-[85%]">
                 ${escapeHtml(text)}
             </div>
-            <div class="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5 font-bold">U</div>
+            <div class="w-6 h-6 rounded-md bg-[#2f3437] text-white flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 font-bold">U</div>
         `;
     } else if (sender === 'error') {
-        div.className = 'flex items-start space-x-2';
+        div.className = 'flex items-start space-x-2.5';
         div.innerHTML = `
-            <div class="w-6 h-6 rounded-full bg-rose-600/30 text-rose-400 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">!</div>
-            <div class="p-3 rounded-2xl rounded-tl-none bg-rose-950/80 border border-rose-800 text-rose-200 text-xs leading-relaxed max-w-[85%]">
+            <div class="w-6 h-6 rounded-md bg-[#ffe2dd] text-[#c4554d] flex items-center justify-center text-xs flex-shrink-0 mt-0.5 font-bold">!</div>
+            <div class="p-3.5 rounded-xl rounded-tl-sm bg-[#ffe2dd]/50 border border-[#f5c6cb] text-[#c4554d] text-xs leading-relaxed max-w-[85%]">
                 ${escapeHtml(text)}
             </div>
         `;
     } else {
-        div.className = 'flex items-start space-x-2';
+        div.className = 'flex items-start space-x-2.5';
         div.innerHTML = `
-            <div class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-400 flex items-center justify-center text-xs flex-shrink-0 mt-0.5 font-bold">AI</div>
-            <div class="p-3 rounded-2xl rounded-tl-none bg-slate-900/90 border border-slate-800 text-slate-200 text-xs leading-relaxed max-w-[85%]">
+            <div class="w-6 h-6 rounded-md bg-[#f1f1ef] border border-[#e3e2e0] text-[#5a5a58] flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 font-bold">✨</div>
+            <div class="p-3.5 rounded-xl rounded-tl-sm bg-[#fcfbf9] border border-[#e9e9e7] text-[#2f3437] text-xs leading-relaxed max-w-[85%] shadow-2xs">
                 ${escapeHtml(text)}
             </div>
         `;
@@ -473,14 +473,14 @@ function appendChatThinking() {
     const id = 'thinking-' + Date.now();
     const div = document.createElement('div');
     div.id = id;
-    div.className = 'flex items-start space-x-2';
+    div.className = 'flex items-start space-x-2.5';
     div.innerHTML = `
-        <div class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-400 flex items-center justify-center text-xs flex-shrink-0 mt-0.5 font-bold">AI</div>
-        <div class="p-3 rounded-2xl rounded-tl-none bg-slate-900/90 border border-slate-800 text-slate-400 text-xs flex items-center space-x-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce"></span>
-            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce [animation-delay:0.2s]"></span>
-            <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce [animation-delay:0.4s]"></span>
-            <span class="ml-1 text-[11px] text-slate-400">Synthesizing adjustments...</span>
+        <div class="w-6 h-6 rounded-md bg-[#f1f1ef] border border-[#e3e2e0] text-[#5a5a58] flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 font-bold">✨</div>
+        <div class="p-3.5 rounded-xl rounded-tl-sm bg-[#fcfbf9] border border-[#e9e9e7] text-[#787774] text-xs flex items-center space-x-1.5 shadow-2xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#6940a5] animate-bounce"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#6940a5] animate-bounce [animation-delay:0.2s]"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#6940a5] animate-bounce [animation-delay:0.4s]"></span>
+            <span class="ml-1 text-[11px] text-[#787774]">Synthesizing adjustments...</span>
         </div>
     `;
     elements.chatHistory.appendChild(div);
@@ -503,7 +503,7 @@ function setupEventListeners() {
         if (isSessionUnlocked()) {
             lockVault();
             if (elements.vaultStatusText) elements.vaultStatusText.textContent = 'Vault Locked';
-            if (elements.vaultIcon) elements.vaultIcon.setAttribute('class', 'w-4 h-4 mr-1.5 text-amber-400');
+            if (elements.vaultIcon) elements.vaultIcon.setAttribute('class', 'w-3.5 h-3.5 mr-1.5 text-[#d9730d]');
             if (elements.dashboardDeck) elements.dashboardDeck.classList.add('hidden');
             if (elements.vaultLockedNotice) elements.vaultLockedNotice.classList.remove('hidden');
             showToast('Session locked. Keys cleared from ephemeral memory.', 'info');
@@ -584,7 +584,7 @@ function setupEventListeners() {
         try {
             await updateProfile({ is_active: isActive });
             elements.statActiveState.textContent = isActive ? 'Active & Running' : 'Paused';
-            elements.statActiveState.className = isActive ? 'text-sm font-bold text-emerald-400 mt-0.5' : 'text-sm font-bold text-slate-500 mt-0.5';
+            elements.statActiveState.className = isActive ? 'text-sm font-semibold text-[#286638] mt-1' : 'text-sm font-semibold text-[#9b9a97] mt-1';
             showToast(isActive ? 'Daily briefing enabled.' : 'Daily briefing paused.', 'info');
         } catch (err) {
             showToast(`Failed to update status: ${err.message}`, 'error');
