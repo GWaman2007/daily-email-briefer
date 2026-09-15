@@ -307,6 +307,10 @@
                                     <option value="advanced">advanced</option>
                                 </select>
                             </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[#787774] mb-1 font-medium">Max Search Queries (1–6)</label>
+                                <input type="number" id="inputMaxQueries" min="1" max="6" value="4" class="w-full px-3 py-1.5 rounded-md bg-white border border-[#e3e2e0] text-xs text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437] transition">
+                            </div>
                         </div>
 
                         <div>
@@ -354,7 +358,12 @@
 
     <!-- Modal: Vault Passphrase Unlock -->
     <div id="modalUnlockVault" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-xs hidden">
-        <div class="w-full max-w-md p-6 rounded-xl bg-white border border-[#e9e9e7] shadow-xl space-y-4">
+        <div class="w-full max-w-md p-6 rounded-xl bg-white border border-[#e9e9e7] shadow-xl space-y-4 relative">
+            <button type="button" id="btnCloseUnlockVault" class="absolute top-4 right-4 p-1.5 rounded-md text-[#787774] hover:text-[#2f3437] hover:bg-[#f1f0ee] transition" title="Close">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
             <div class="text-center">
                 <div class="w-11 h-11 rounded-full bg-[#faebdd] text-[#d9730d] mx-auto flex items-center justify-center mb-2.5">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -464,8 +473,8 @@
 
     <!-- Modal: Brief Inspector (HTML Preview & Source) -->
     <div id="modalInspectBrief" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-xs hidden">
-        <div class="w-full max-w-4xl p-6 rounded-xl bg-white border border-[#e9e9e7] shadow-xl space-y-4 max-h-[95vh] flex flex-col">
-            <div class="flex items-center justify-between pb-3 border-b border-[#e9e9e7]">
+        <div class="w-full max-w-4xl p-6 rounded-xl bg-white border border-[#e9e9e7] shadow-xl space-y-4 h-[88vh] max-h-[900px] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-[#e9e9e7] flex-shrink-0">
                 <div class="truncate mr-4">
                     <h3 id="inspectBriefSubject" class="text-base font-semibold text-[#2f3437] font-heading truncate">Digest Preview</h3>
                     <p id="inspectBriefDate" class="text-xs text-[#787774] font-mono">Date</p>
@@ -476,6 +485,12 @@
                         <button id="btnTabRendered" class="px-3 py-1 rounded bg-white text-[#2f3437] shadow-2xs font-medium">Preview</button>
                         <button id="btnTabRaw" class="px-3 py-1 rounded text-[#787774] hover:text-[#2f3437]">Raw HTML</button>
                     </div>
+                    <button id="btnCopyRawBrief" class="hidden px-2.5 py-1 rounded-md text-xs font-medium border border-[#e3e2e0] bg-white hover:bg-[#f7f6f5] text-[#2f3437] transition items-center space-x-1" title="Copy raw HTML">
+                        <svg class="w-3.5 h-3.5 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span>Copy</span>
+                    </button>
                     <button id="btnCloseInspectBrief" class="p-1.5 rounded-md hover:bg-[#f1f0ee] text-[#787774] hover:text-[#2f3437]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -485,9 +500,9 @@
             </div>
 
             <!-- Content Area -->
-            <div class="flex-1 overflow-hidden min-h-[500px]">
-                <iframe id="briefIframe" class="email-preview-frame w-full h-full border border-[#e9e9e7] rounded-lg"></iframe>
-                <pre id="briefRawCode" class="hidden w-full h-full p-4 bg-[#fcfbf9] text-[#2f3437] font-mono text-xs overflow-auto rounded-lg border border-[#e9e9e7] select-all"></pre>
+            <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
+                <iframe id="briefIframe" class="email-preview-frame w-full h-full flex-1 border border-[#e9e9e7] rounded-lg"></iframe>
+                <pre id="briefRawCode" class="hidden w-full h-full flex-1 p-4 bg-[#fcfbf9] text-[#2f3437] font-mono text-xs overflow-auto rounded-lg border border-[#e9e9e7] select-all"></pre>
             </div>
         </div>
     </div>
@@ -496,6 +511,6 @@
     <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 max-w-sm pointer-events-none"></div>
 
     <!-- Application Script Entrypoint -->
-    <script type="module" src="js/app.js?v=2.0.6"></script>
+    <script type="module" src="js/app.js?v=2.0.7"></script>
 </body>
 </html>

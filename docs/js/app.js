@@ -76,6 +76,7 @@ const elements = {
     inputFallbackModel: document.getElementById('inputFallbackModel'),
     selectSearchTopic: document.getElementById('selectSearchTopic'),
     selectSearchDepth: document.getElementById('selectSearchDepth'),
+    inputMaxQueries: document.getElementById('inputMaxQueries'),
     inputPreferencesSummary: document.getElementById('inputPreferencesSummary'),
 
     // Briefs Archive
@@ -84,6 +85,7 @@ const elements = {
 
     // Modals
     modalUnlockVault: document.getElementById('modalUnlockVault'),
+    btnCloseUnlockVault: document.getElementById('btnCloseUnlockVault'),
     formUnlockVault: document.getElementById('formUnlockVault'),
     inputUnlockPassphrase: document.getElementById('inputUnlockPassphrase'),
     unlockErrorMsg: document.getElementById('unlockErrorMsg'),
@@ -111,6 +113,7 @@ const elements = {
     inspectBriefDate: document.getElementById('inspectBriefDate'),
     btnTabRendered: document.getElementById('btnTabRendered'),
     btnTabRaw: document.getElementById('btnTabRaw'),
+    btnCopyRawBrief: document.getElementById('btnCopyRawBrief'),
     briefIframe: document.getElementById('briefIframe'),
     briefRawCode: document.getElementById('briefRawCode'),
 
@@ -226,6 +229,7 @@ async function loadProfileData() {
         elements.inputFallbackModel.value = currentProfile.fallback_model || 'gemini-3.1-flash-lite';
         elements.selectSearchTopic.value = currentProfile.search_topic || 'news';
         elements.selectSearchDepth.value = currentProfile.search_depth || 'basic';
+        if (elements.inputMaxQueries) elements.inputMaxQueries.value = currentProfile.max_search_queries || 4;
         elements.inputPreferencesSummary.value = currentProfile.preferences_summary || '';
 
     } catch (err) {
@@ -252,30 +256,30 @@ async function loadEventsData() {
             today.setHours(0, 0, 0, 0);
 
             elements.activeEventsContainer.innerHTML = activeEvents.map(ev => {
-                const eventDate = new Date(ev.event_date + 'T00:00:00');
-                const diffTime = eventDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const parts = (ev.event_date || '').split('-').map(Number);
+                const eventDate = parts.length === 3 ? new Date(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0) : new Date(ev.event_date);
+                const diffDays = Math.round((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
                 let badge = '';
                 if (diffDays === 0) {
-                    badge = '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-[#ffe2dd] text-[#c4554d] border border-[#f5c6cb] animate-pulse">TODAY!</span>';
+                    badge = '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-[#ffe2dd] text-[#c4554d] border border-[#f5c6cb] animate-pulse whitespace-nowrap">TODAY!</span>';
                 } else if (diffDays === 1) {
-                    badge = '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-[#faebdd] text-[#d9730d] border border-[#f5d9bc]">Tomorrow</span>';
+                    badge = '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-[#faebdd] text-[#d9730d] border border-[#f5d9bc] whitespace-nowrap">Tomorrow</span>';
                 } else if (diffDays > 1) {
-                    badge = `<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#d3e5ef] text-[#185b8c] border border-[#b8d5e8]">in ${diffDays} days</span>`;
+                    badge = `<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#d3e5ef] text-[#185b8c] border border-[#b8d5e8] whitespace-nowrap">in ${diffDays} days</span>`;
                 } else {
-                    badge = '<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#f1f1ef] text-[#787774]">Passed</span>';
+                    badge = '<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#f1f1ef] text-[#787774] whitespace-nowrap">Passed</span>';
                 }
 
                 return `
-                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#fcfbf9] border border-[#e9e9e7] hover:border-[#d3d2cf] transition">
-                        <div class="flex items-center space-x-2.5 truncate mr-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-[#2f3437]"></span>
-                            <span class="font-medium text-[#2f3437] truncate">${escapeHtml(ev.title)}</span>
-                            <span class="text-[#787774] text-[11px] font-mono">(${ev.event_date})</span>
-                            ${badge}
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#fcfbf9] border border-[#e9e9e7] hover:border-[#d3d2cf] transition min-w-0">
+                        <div class="flex items-center space-x-2.5 min-w-0 flex-1 mr-2.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[#2f3437] flex-shrink-0"></span>
+                            <span class="font-medium text-[#2f3437] truncate text-xs" title="${escapeHtml(ev.title)}">${escapeHtml(ev.title)}</span>
+                            <span class="text-[#787774] text-[11px] font-mono flex-shrink-0">(${ev.event_date})</span>
+                            <div class="flex-shrink-0">${badge}</div>
                         </div>
-                        <button data-delete-event="${ev.id}" class="p-1 rounded text-[#787774] hover:text-[#c4554d] hover:bg-[#ffe2dd]/50 transition" title="Delete Milestone">
+                        <button data-delete-event="${ev.id}" class="p-1 rounded text-[#787774] hover:text-[#c4554d] hover:bg-[#ffe2dd]/50 transition flex-shrink-0" title="Delete Milestone">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
@@ -322,12 +326,15 @@ async function loadBriefsData() {
             });
 
             return `
-                <div data-brief-id="${b.id}" class="brief-item p-3 rounded-lg bg-[#fcfbf9] border border-[#e9e9e7] hover:border-[#2f3437] hover:bg-white transition cursor-pointer group shadow-2xs">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-[10px] font-mono text-[#787774]">${dateStr}</span>
-                        <span class="text-[10px] text-[#787774] group-hover:text-[#2f3437] font-medium transition">View Digest →</span>
+                <div data-brief-id="${b.id}" class="brief-item p-3.5 rounded-lg bg-[#fcfbf9] border border-[#e9e9e7] hover:border-[#2f3437] hover:bg-white transition cursor-pointer group shadow-2xs">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-[11px] font-mono text-[#5a5a58] font-medium bg-[#f1f1ef] px-2 py-0.5 rounded border border-[#e3e2e0]">${dateStr}</span>
+                        <span class="text-xs text-[#787774] group-hover:text-[#2f3437] font-medium transition flex items-center space-x-1">
+                            <span>View Digest</span>
+                            <span class="transition-transform group-hover:translate-x-0.5">→</span>
+                        </span>
                     </div>
-                    <h4 class="font-medium text-[#2f3437] line-clamp-2 leading-snug">${escapeHtml(b.subject)}</h4>
+                    <h4 class="font-medium text-[#2f3437] text-xs line-clamp-2 leading-snug">${escapeHtml(b.subject)}</h4>
                 </div>
             `;
         }).join('');
@@ -373,11 +380,13 @@ function switchBriefTab(tab) {
         elements.btnTabRaw.className = 'px-3 py-1 rounded text-[#787774] hover:text-[#2f3437]';
         elements.briefIframe.classList.remove('hidden');
         elements.briefRawCode.classList.add('hidden');
+        if (elements.btnCopyRawBrief) elements.btnCopyRawBrief.classList.add('hidden');
     } else {
         elements.btnTabRaw.className = 'px-3 py-1 rounded bg-white text-[#2f3437] shadow-2xs font-medium';
         elements.btnTabRendered.className = 'px-3 py-1 rounded text-[#787774] hover:text-[#2f3437]';
         elements.briefRawCode.classList.remove('hidden');
         elements.briefIframe.classList.add('hidden');
+        if (elements.btnCopyRawBrief) elements.btnCopyRawBrief.classList.remove('hidden');
     }
 }
 
@@ -594,14 +603,26 @@ function setupEventListeners() {
 
     // Direct Profile Save
     elements.btnSaveProfileDirect.onclick = async () => {
+        const recipientEmail = elements.inputRecipientEmail.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!recipientEmail || !emailRegex.test(recipientEmail)) {
+            showToast('Please provide a valid recipient email address.', 'warning');
+            elements.inputRecipientEmail.focus();
+            return;
+        }
+
+        const maxQueriesVal = parseInt(elements.inputMaxQueries?.value || '4', 10);
+        const maxQueries = Math.min(6, Math.max(1, isNaN(maxQueriesVal) ? 4 : maxQueriesVal));
+
         try {
             const updates = {
-                recipient_email: elements.inputRecipientEmail.value.trim(),
-                persona_tone: elements.inputPersonaTone.value.trim(),
-                primary_model: elements.inputPrimaryModel.value.trim(),
-                fallback_model: elements.inputFallbackModel.value.trim(),
+                recipient_email: recipientEmail,
+                persona_tone: elements.inputPersonaTone.value.trim() || 'Analytical & Direct',
+                primary_model: elements.inputPrimaryModel.value.trim() || 'gemini-3.5-flash-lite',
+                fallback_model: elements.inputFallbackModel.value.trim() || 'gemini-3.1-flash-lite',
                 search_topic: elements.selectSearchTopic.value,
                 search_depth: elements.selectSearchDepth.value,
+                max_search_queries: maxQueries,
                 preferences_summary: elements.inputPreferencesSummary.value.trim(),
             };
 
@@ -656,7 +677,12 @@ function setupEventListeners() {
     elements.chatForm.onsubmit = handleChatSubmit;
     document.querySelectorAll('.chat-chip').forEach(chip => {
         chip.onclick = () => {
-            elements.chatInput.value = chip.textContent.trim().replace(/^[^\w]+/, '');
+            const text = chip.textContent.trim();
+            if (text.toLowerCase().includes('milestone')) {
+                openAddEventModal();
+                return;
+            }
+            elements.chatInput.value = text.replace(/^[^\w]+/, '');
             handleChatSubmit();
         };
     });
@@ -675,6 +701,47 @@ function setupEventListeners() {
     elements.btnTabRendered.onclick = () => switchBriefTab('rendered');
     elements.btnTabRaw.onclick = () => switchBriefTab('raw');
 
+    if (elements.btnCopyRawBrief) {
+        elements.btnCopyRawBrief.onclick = async () => {
+            if (!currentBriefDetail?.html_content) return;
+            try {
+                await navigator.clipboard.writeText(currentBriefDetail.html_content);
+                showToast('Raw HTML copied to clipboard!', 'success');
+            } catch (copyErr) {
+                showToast(`Failed to copy: ${copyErr.message}`, 'error');
+            }
+        };
+    }
+
+    if (elements.btnCloseUnlockVault) {
+        elements.btnCloseUnlockVault.onclick = closeUnlockModal;
+    }
+
+    // Modal backdrop click-to-dismiss listeners
+    [
+        { modal: elements.modalUnlockVault, closeFn: closeUnlockModal },
+        { modal: elements.modalVaultConfig, closeFn: closeVaultConfigModal },
+        { modal: elements.modalAddEvent, closeFn: closeAddEventModal },
+        { modal: elements.modalInspectBrief, closeFn: () => elements.modalInspectBrief.classList.add('hidden') },
+    ].forEach(({ modal, closeFn }) => {
+        if (!modal) return;
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeFn();
+            }
+        });
+    });
+
+    // Global Escape key listener to close modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeUnlockModal();
+            closeVaultConfigModal();
+            closeAddEventModal();
+            if (elements.modalInspectBrief) elements.modalInspectBrief.classList.add('hidden');
+        }
+    });
+
     // Trigger Brief Dispatch
     elements.btnTriggerDispatch.onclick = triggerWorkflowDispatch;
 }
@@ -683,6 +750,7 @@ function openUnlockModal() {
     elements.unlockErrorMsg.classList.add('hidden');
     elements.inputUnlockPassphrase.value = '';
     elements.modalUnlockVault.classList.remove('hidden');
+    elements.inputUnlockPassphrase?.focus();
 }
 function closeUnlockModal() {
     elements.modalUnlockVault.classList.add('hidden');
@@ -700,7 +768,11 @@ function closeVaultConfigModal() {
 }
 
 function openAddEventModal() {
+    if (elements.inputEventDate) {
+        elements.inputEventDate.min = new Date().toISOString().split('T')[0];
+    }
     elements.modalAddEvent.classList.remove('hidden');
+    elements.inputEventTitle?.focus();
 }
 function closeAddEventModal() {
     elements.modalAddEvent.classList.add('hidden');
