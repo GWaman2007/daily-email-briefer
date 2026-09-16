@@ -449,8 +449,8 @@ function openSampleDraftModal() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${subject}</title>
 </head>
-<body style="margin:0; padding:28px 16px; background-color:${outerBg}; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased;">
-    <div style="max-width:640px; margin:0 auto; background-color:${cardBg}; padding:32px 28px; border-radius:12px; border:1px solid ${cardBorder}; box-shadow:0 1px 3px rgba(0,0,0,0.04); color:${textPrimary};">
+<body style="margin:0; padding:20px 14px; background-color:${outerBg}; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased;">
+    <div style="max-width:660px; margin:0 auto; background-color:${cardBg}; padding:28px 24px; border-radius:12px; border:1px solid ${cardBorder}; box-shadow:0 1px 3px rgba(0,0,0,0.04); color:${textPrimary};">
         <!-- Header -->
         <div style="border-bottom:1px solid ${cardBorder}; padding-bottom:20px; margin-bottom:24px;">
             <div style="display:inline-block; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; background-color:${badgeBg}; color:${badgeText}; letter-spacing:1px; text-transform:uppercase;">

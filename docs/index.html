@@ -652,10 +652,10 @@
 
     <!-- Modal: Brief Inspector (HTML Preview & Source) -->
     <div id="modalInspectBrief"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs hidden">
+        class="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/40 dark:bg-black/70 backdrop-blur-xs hidden">
         <div
-            class="w-full max-w-4xl p-6 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-subtle)] shadow-xl space-y-4 max-h-[95vh] flex flex-col">
-            <div class="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+            class="w-full max-w-5xl h-[92vh] max-h-[96vh] p-4 sm:p-5 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-subtle)] shadow-2xl flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)] flex-shrink-0">
                 <div class="truncate mr-4">
                     <h3 id="inspectBriefSubject"
                         class="text-base font-semibold text-[var(--text-primary)] font-heading truncate">Digest Preview
@@ -672,6 +672,14 @@
                             class="px-3 py-1 rounded text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Raw
                             HTML</button>
                     </div>
+                    <!-- Copy Raw Brief Button -->
+                    <button id="btnCopyRawBrief" title="Copy Raw HTML"
+                        class="p-1.5 rounded-md hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition hidden">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                    </button>
                     <button id="btnCloseInspectBrief"
                         class="p-1.5 rounded-md hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -682,12 +690,12 @@
                 </div>
             </div>
 
-            <!-- Content Area -->
-            <div class="flex-1 overflow-hidden min-h-[500px]">
+            <!-- Content Area: Fills 100% of remaining vertical height -->
+            <div class="flex-1 w-full min-h-0 overflow-hidden relative rounded-lg border border-[var(--border-subtle)] bg-[var(--email-preview-bg)] mt-3">
                 <iframe id="briefIframe"
-                    class="email-preview-frame w-full h-full border border-[var(--border-subtle)] rounded-lg"></iframe>
+                    class="email-preview-frame w-full h-full border-0 block"></iframe>
                 <pre id="briefRawCode"
-                    class="hidden w-full h-full p-4 bg-[var(--bg-canvas)] text-[var(--text-primary)] font-mono text-xs overflow-auto rounded-lg border border-[var(--border-subtle)] select-all"></pre>
+                    class="hidden w-full h-full p-4 bg-[var(--bg-canvas)] text-[var(--text-primary)] font-mono text-xs overflow-auto select-all"></pre>
             </div>
         </div>
     </div>
