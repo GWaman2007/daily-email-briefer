@@ -7,7 +7,7 @@
 :root {
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
-    
+
     /* Notion Light Surface & Text Colors */
     --bg-canvas: #fcfbf9;
     --bg-card: #ffffff;
@@ -18,13 +18,13 @@
     --text-primary: #2f3437;
     --text-secondary: #787774;
     --text-muted: #9b9a97;
-    
+
     /* Notion Accents */
     --accent-coral: #e16259;
     --accent-coral-hover: #d4534a;
     --accent-coral-bg: #ffe2dd;
     --accent-coral-text: #c4554d;
-    
+
     --tag-green-bg: #dbeddb;
     --tag-green-text: #286638;
     --tag-green-border: #c3dfc3;
@@ -80,13 +80,13 @@ html.dark,
     --text-primary: #ebebeb;
     --text-secondary: #9b9a97;
     --text-muted: #6f6e6b;
-    
+
     /* Notion Dark Accents */
     --accent-coral: #eb5757;
     --accent-coral-hover: #fa6b6b;
     --accent-coral-bg: #3c2424;
     --accent-coral-text: #ff8585;
-    
+
     --tag-green-bg: #1e3323;
     --tag-green-text: #6bc97b;
     --tag-green-border: #29462f;
@@ -194,13 +194,16 @@ body {
     width: 6px;
     height: 6px;
 }
+
 ::-webkit-scrollbar-track {
     background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover);
 }
@@ -212,9 +215,11 @@ body {
     font-weight: 500;
     transition: background-color 0.15s ease, transform 0.05s ease;
 }
+
 .notion-btn-primary:hover {
     background-color: var(--accent-coral-hover);
 }
+
 .notion-btn-primary:active {
     transform: scale(0.99);
 }
@@ -226,6 +231,7 @@ body {
     font-weight: 500;
     transition: background-color 0.15s ease, border-color 0.15s ease;
 }
+
 .notion-btn-secondary:hover {
     background-color: var(--bg-hover);
     border-color: var(--border-strong);
@@ -237,12 +243,15 @@ body {
     overflow: hidden;
     transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
+
 .theme-toggle-btn:hover {
     transform: scale(1.05);
 }
+
 .theme-toggle-btn:active {
     transform: scale(0.95);
 }
+
 .theme-toggle-btn svg {
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
 }
@@ -252,15 +261,18 @@ body {
     opacity: 0;
     transform: scale(0.98) translateY(6px);
 }
+
 .modal-enter-active {
     opacity: 1;
     transform: scale(1) translateY(0);
     transition: opacity 0.18s ease-out, transform 0.18s ease-out;
 }
+
 .modal-exit {
     opacity: 1;
     transform: scale(1) translateY(0);
 }
+
 .modal-exit-active {
     opacity: 0;
     transform: scale(0.98) translateY(6px);
@@ -277,6 +289,7 @@ body {
         opacity: 0;
         transform: translateY(8px) scale(0.98);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -286,7 +299,8 @@ body {
 /* Email Preview iframe container */
 .email-preview-frame {
     width: 100%;
-    height: 600px;
+    height: 100%;
+    min-height: 100%;
     border: none;
     border-radius: 8px;
     background-color: var(--email-preview-bg);

@@ -88,6 +88,7 @@ const elements = {
 
     // Modals
     modalUnlockVault: document.getElementById('modalUnlockVault'),
+    btnCloseUnlockVault: document.getElementById('btnCloseUnlockVault'),
     formUnlockVault: document.getElementById('formUnlockVault'),
     inputUnlockPassphrase: document.getElementById('inputUnlockPassphrase'),
     unlockErrorMsg: document.getElementById('unlockErrorMsg'),
@@ -115,6 +116,7 @@ const elements = {
     inspectBriefDate: document.getElementById('inspectBriefDate'),
     btnTabRendered: document.getElementById('btnTabRendered'),
     btnTabRaw: document.getElementById('btnTabRaw'),
+    btnCopyRawBrief: document.getElementById('btnCopyRawBrief'),
     briefIframe: document.getElementById('briefIframe'),
     briefRawCode: document.getElementById('briefRawCode'),
 
@@ -126,12 +128,11 @@ const elements = {
  */
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    toast.className = `toast pointer-events-auto p-3.5 rounded-lg shadow-md border text-xs font-medium flex items-center justify-between space-x-3 transition-all duration-300 ${
-        type === 'success' ? 'bg-[var(--bg-card)] border-[#c3dfc3] dark:border-[#29462f] text-[#286638] dark:text-[#6bc97b]' :
-        type === 'error' ? 'bg-[var(--bg-card)] border-[#ffe2dd] dark:border-[#502828] text-[#c4554d] dark:text-[#ff8585]' :
-        type === 'warning' ? 'bg-[var(--bg-card)] border-[#faebdd] dark:border-[#50371a] text-[#d9730d] dark:text-[#e89547]' :
-        'bg-[var(--toast-bg)] border-[var(--toast-border)] text-[var(--toast-text)]'
-    }`;
+    toast.className = `toast pointer-events-auto p-3.5 rounded-lg shadow-md border text-xs font-medium flex items-center justify-between space-x-3 transition-all duration-300 ${type === 'success' ? 'bg-[var(--bg-card)] border-[#c3dfc3] dark:border-[#29462f] text-[#286638] dark:text-[#6bc97b]' :
+            type === 'error' ? 'bg-[var(--bg-card)] border-[#ffe2dd] dark:border-[#502828] text-[#c4554d] dark:text-[#ff8585]' :
+                type === 'warning' ? 'bg-[var(--bg-card)] border-[#faebdd] dark:border-[#50371a] text-[#d9730d] dark:text-[#e89547]' :
+                    'bg-[var(--toast-bg)] border-[var(--toast-border)] text-[var(--toast-text)]'
+        }`;
 
     toast.innerHTML = `
         <div class="flex items-center space-x-2">
@@ -293,6 +294,7 @@ async function loadProfileData() {
         elements.inputFallbackModel.value = currentProfile.fallback_model || 'gemini-3.1-flash-lite';
         elements.selectSearchTopic.value = currentProfile.search_topic || 'news';
         elements.selectSearchDepth.value = currentProfile.search_depth || 'basic';
+        if (elements.inputMaxQueries) elements.inputMaxQueries.value = currentProfile.max_search_queries || 4;
         elements.inputPreferencesSummary.value = currentProfile.preferences_summary || '';
 
         // Synchronize theme preference from profile if set
@@ -326,9 +328,9 @@ async function loadEventsData() {
             today.setHours(0, 0, 0, 0);
 
             elements.activeEventsContainer.innerHTML = activeEvents.map(ev => {
-                const eventDate = new Date(ev.event_date + 'T00:00:00');
-                const diffTime = eventDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const parts = (ev.event_date || '').split('-').map(Number);
+                const eventDate = parts.length === 3 ? new Date(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0) : new Date(ev.event_date);
+                const diffDays = Math.round((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
                 let badge = '';
                 if (diffDays === 0) {
@@ -447,11 +449,13 @@ function switchBriefTab(tab) {
         elements.btnTabRaw.className = 'px-3 py-1 rounded text-[var(--text-secondary)] hover:text-[var(--text-primary)]';
         elements.briefIframe.classList.remove('hidden');
         elements.briefRawCode.classList.add('hidden');
+        if (elements.btnCopyRawBrief) elements.btnCopyRawBrief.classList.add('hidden');
     } else {
         elements.btnTabRaw.className = 'px-3 py-1 rounded bg-[var(--bg-card)] text-[var(--text-primary)] shadow-2xs font-medium';
         elements.btnTabRendered.className = 'px-3 py-1 rounded text-[var(--text-secondary)] hover:text-[var(--text-primary)]';
         elements.briefRawCode.classList.remove('hidden');
         elements.briefIframe.classList.add('hidden');
+        if (elements.btnCopyRawBrief) elements.btnCopyRawBrief.classList.remove('hidden');
     }
 }
 
@@ -667,14 +671,26 @@ function setupEventListeners() {
 
     // Direct Profile Save
     elements.btnSaveProfileDirect.onclick = async () => {
+        const recipientEmail = elements.inputRecipientEmail.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!recipientEmail || !emailRegex.test(recipientEmail)) {
+            showToast('Please provide a valid recipient email address.', 'warning');
+            elements.inputRecipientEmail.focus();
+            return;
+        }
+
+        const maxQueriesVal = parseInt(elements.inputMaxQueries?.value || '4', 10);
+        const maxQueries = Math.min(6, Math.max(1, isNaN(maxQueriesVal) ? 4 : maxQueriesVal));
+
         try {
             const updates = {
-                recipient_email: elements.inputRecipientEmail.value.trim(),
-                persona_tone: elements.inputPersonaTone.value.trim(),
-                primary_model: elements.inputPrimaryModel.value.trim(),
-                fallback_model: elements.inputFallbackModel.value.trim(),
+                recipient_email: recipientEmail,
+                persona_tone: elements.inputPersonaTone.value.trim() || 'Analytical & Direct',
+                primary_model: elements.inputPrimaryModel.value.trim() || 'gemini-3.5-flash-lite',
+                fallback_model: elements.inputFallbackModel.value.trim() || 'gemini-3.1-flash-lite',
                 search_topic: elements.selectSearchTopic.value,
                 search_depth: elements.selectSearchDepth.value,
+                max_search_queries: maxQueries,
                 preferences_summary: elements.inputPreferencesSummary.value.trim(),
                 theme: elements.selectTheme ? elements.selectTheme.value : (document.documentElement.classList.contains('dark') ? 'dark' : 'light'),
             };
@@ -740,7 +756,12 @@ function setupEventListeners() {
     elements.chatForm.onsubmit = handleChatSubmit;
     document.querySelectorAll('.chat-chip').forEach(chip => {
         chip.onclick = () => {
-            elements.chatInput.value = chip.textContent.trim().replace(/^[^\w]+/, '');
+            const text = chip.textContent.trim();
+            if (text.toLowerCase().includes('milestone')) {
+                openAddEventModal();
+                return;
+            }
+            elements.chatInput.value = text.replace(/^[^\w]+/, '');
             handleChatSubmit();
         };
     });
@@ -759,6 +780,47 @@ function setupEventListeners() {
     elements.btnTabRendered.onclick = () => switchBriefTab('rendered');
     elements.btnTabRaw.onclick = () => switchBriefTab('raw');
 
+    if (elements.btnCopyRawBrief) {
+        elements.btnCopyRawBrief.onclick = async () => {
+            if (!currentBriefDetail?.html_content) return;
+            try {
+                await navigator.clipboard.writeText(currentBriefDetail.html_content);
+                showToast('Raw HTML copied to clipboard!', 'success');
+            } catch (copyErr) {
+                showToast(`Failed to copy: ${copyErr.message}`, 'error');
+            }
+        };
+    }
+
+    if (elements.btnCloseUnlockVault) {
+        elements.btnCloseUnlockVault.onclick = closeUnlockModal;
+    }
+
+    // Modal backdrop click-to-dismiss listeners
+    [
+        { modal: elements.modalUnlockVault, closeFn: closeUnlockModal },
+        { modal: elements.modalVaultConfig, closeFn: closeVaultConfigModal },
+        { modal: elements.modalAddEvent, closeFn: closeAddEventModal },
+        { modal: elements.modalInspectBrief, closeFn: () => elements.modalInspectBrief.classList.add('hidden') },
+    ].forEach(({ modal, closeFn }) => {
+        if (!modal) return;
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeFn();
+            }
+        });
+    });
+
+    // Global Escape key listener to close modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeUnlockModal();
+            closeVaultConfigModal();
+            closeAddEventModal();
+            if (elements.modalInspectBrief) elements.modalInspectBrief.classList.add('hidden');
+        }
+    });
+
     // Trigger Brief Dispatch
     elements.btnTriggerDispatch.onclick = triggerWorkflowDispatch;
 }
@@ -767,6 +829,7 @@ function openUnlockModal() {
     elements.unlockErrorMsg.classList.add('hidden');
     elements.inputUnlockPassphrase.value = '';
     elements.modalUnlockVault.classList.remove('hidden');
+    elements.inputUnlockPassphrase?.focus();
 }
 function closeUnlockModal() {
     elements.modalUnlockVault.classList.add('hidden');
@@ -784,7 +847,11 @@ function closeVaultConfigModal() {
 }
 
 function openAddEventModal() {
+    if (elements.inputEventDate) {
+        elements.inputEventDate.min = new Date().toISOString().split('T')[0];
+    }
     elements.modalAddEvent.classList.remove('hidden');
+    elements.inputEventTitle?.focus();
 }
 function closeAddEventModal() {
     elements.modalAddEvent.classList.add('hidden');
