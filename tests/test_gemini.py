@@ -47,7 +47,27 @@ class TestGemini(unittest.TestCase):
         self.assertEqual(res["subject"], "Daily Intelligence · Aug 18: Breakthroughs in Quantum & AI")
         self.assertIn("Top Stories", res["html"])
 
-    def test_fallback_html_creation(self):
+    @patch.object(GeminiSynthesizer, "_call_with_retry_and_fallback")
+    def test_synthesize_brief_theme_selection(self, mock_call):
+        mock_call.return_value = '{"subject": "S", "html": "<p>H</p>"}'
+
+        synthesizer = GeminiSynthesizer(api_key="test-key")
+        articles = [Article(title="AI", url="https://a.com", content="C")]
+        events = []
+
+        # Dark theme
+        synthesizer.synthesize_brief(articles, {"theme": "dark"}, events)
+        dark_prompt = mock_call.call_args[0][0]
+        self.assertIn("NOTION DARK THEME", dark_prompt)
+        self.assertIn("#191919", dark_prompt)
+
+        # Light theme (default)
+        synthesizer.synthesize_brief(articles, {"theme": "light"}, events)
+        light_prompt = mock_call.call_args[0][0]
+        self.assertIn("NOTION LIGHT THEME", light_prompt)
+        self.assertIn("#fcfbf9", light_prompt)
+
+    def test_fallback_html_creation_light_and_dark(self):
         synthesizer = GeminiSynthesizer(api_key="test-key")
         articles = [
             Article(title="Fallback Story", url="https://example.com/story", content="Story snippet here.")
@@ -55,10 +75,24 @@ class TestGemini(unittest.TestCase):
         events = [
             {"title": "Conference", "event_date": "2026-09-01"}
         ]
-        html = synthesizer._create_fallback_html("Tuesday, August 18, 2026", articles, events)
-        self.assertIn("Fallback Story", html)
-        self.assertIn("Conference", html)
-        self.assertIn("https://example.com/story", html)
+
+        # Test Light Fallback HTML
+        light_html = synthesizer._create_fallback_html("Tuesday, August 18, 2026", articles, events, theme="light")
+        self.assertIn("Fallback Story", light_html)
+        self.assertIn("Conference", light_html)
+        self.assertIn("https://example.com/story", light_html)
+        self.assertIn("#fcfbf9", light_html)
+        self.assertIn("#ffffff", light_html)
+        self.assertIn("#e16259", light_html)
+
+        # Test Dark Fallback HTML
+        dark_html = synthesizer._create_fallback_html("Tuesday, August 18, 2026", articles, events, theme="dark")
+        self.assertIn("Fallback Story", dark_html)
+        self.assertIn("Conference", dark_html)
+        self.assertIn("https://example.com/story", dark_html)
+        self.assertIn("#191919", dark_html)
+        self.assertIn("#202020", dark_html)
+        self.assertIn("#eb5757", dark_html)
 
 
 if __name__ == "__main__":

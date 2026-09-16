@@ -8,40 +8,60 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+
+    <!-- Immediate Theme Initialization Script (Avoids Flash of Unstyled Theme) -->
+    <script>
+        (function() {
+            try {
+                const storedTheme = localStorage.getItem('dailybriefer_theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
                         notion: {
-                            canvas: '#fcfbf9',
-                            card: '#ffffff',
-                            subtle: '#f7f6f5',
-                            hover: '#f1f0ee',
-                            border: '#e9e9e7',
-                            'border-strong': '#d3d2cf',
-                            text: '#2f3437',
-                            muted: '#787774',
-                            coral: '#e16259',
-                            'coral-hover': '#d4534a',
-                            'coral-bg': '#ffe2dd',
-                            'coral-text': '#c4554d',
-                            green: '#dbeddb',
-                            'green-text': '#286638',
-                            amber: '#faebdd',
-                            'amber-text': '#d9730d',
-                            blue: '#d3e5ef',
-                            'blue-text': '#185b8c',
-                            purple: '#eae4f2',
-                            'purple-text': '#6940a5',
-                            gray: '#f1f1ef',
-                            'gray-text': '#5a5a58'
+                            canvas: 'var(--bg-canvas)',
+                            card: 'var(--bg-card)',
+                            subtle: 'var(--bg-subtle)',
+                            hover: 'var(--bg-hover)',
+                            border: 'var(--border-subtle)',
+                            'border-strong': 'var(--border-strong)',
+                            text: 'var(--text-primary)',
+                            muted: 'var(--text-secondary)',
+                            dim: 'var(--text-muted)',
+                            coral: 'var(--accent-coral)',
+                            'coral-hover': 'var(--accent-coral-hover)',
+                            'coral-bg': 'var(--accent-coral-bg)',
+                            'coral-text': 'var(--accent-coral-text)',
+                            green: 'var(--tag-green-bg)',
+                            'green-text': 'var(--tag-green-text)',
+                            amber: 'var(--tag-amber-bg)',
+                            'amber-text': 'var(--tag-amber-text)',
+                            blue: 'var(--tag-blue-bg)',
+                            'blue-text': 'var(--tag-blue-text)',
+                            purple: 'var(--tag-purple-bg)',
+                            'purple-text': 'var(--tag-purple-text)',
+                            gray: 'var(--tag-gray-bg)',
+                            'gray-text': 'var(--tag-gray-text)'
                         }
                     },
                     fontFamily: {
-                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        sans: ['Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     }
                 }
@@ -53,25 +73,25 @@
     <!-- Custom Styles -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="bg-[#fcfbf9] text-[#2f3437] min-h-screen flex flex-col antialiased selection:bg-[#ffe2dd] selection:text-[#c4554d]">
+<body class="bg-[var(--bg-canvas)] text-[var(--text-primary)] min-h-screen flex flex-col antialiased selection:bg-[var(--accent-coral-bg)] selection:text-[var(--accent-coral-text)]">
 
     <!-- Top Navbar -->
-    <header class="sticky top-0 z-40 w-full border-b border-[#e9e9e7] bg-white/90 backdrop-blur-md">
+    <header class="sticky top-0 z-40 w-full border-b border-[var(--border-subtle)] bg-[var(--nav-bg)] backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <!-- Brand -->
             <div class="flex items-center space-x-3">
                 <!-- Notion-style Monogram Icon -->
-                <div class="w-8 h-8 rounded-md bg-[#2f3437] text-white flex items-center justify-center shadow-xs font-bold text-sm tracking-tighter">
+                <div class="w-8 h-8 rounded-md bg-[#2f3437] dark:bg-[#383838] dark:border dark:border-[#444444] text-white flex items-center justify-center shadow-xs font-bold text-sm tracking-tighter">
                     DB
                 </div>
                 <div>
                     <div class="flex items-center space-x-2">
-                        <h1 class="text-base font-semibold tracking-tight text-[#2f3437] font-heading">DailyBriefer <span class="text-[11px] px-1.5 py-0.5 rounded bg-[#f1f1ef] text-[#787774] font-mono font-medium border border-[#e3e2e0]">v2</span></h1>
-                        <span id="navStatusBadge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[#dbeddb] text-[#286638] border border-[#c3dfc3]">
-                            <span class="w-1.5 h-1.5 rounded-full bg-[#286638] mr-1.5 animate-pulse"></span> Active
+                        <h1 class="text-base font-semibold tracking-tight text-[var(--text-primary)] font-heading">DailyBriefer <span class="text-[11px] px-1.5 py-0.5 rounded bg-[var(--tag-gray-bg)] text-[var(--tag-gray-text)] font-mono font-medium border border-[var(--tag-gray-border)]">v2</span></h1>
+                        <span id="navStatusBadge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--tag-green-bg)] text-[var(--tag-green-text)] border border-[var(--tag-green-border)]">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[var(--tag-green-text)] mr-1.5 animate-pulse"></span> Active
                         </span>
                     </div>
-                    <p class="text-xs text-[#787774] hidden sm:block">Serverless AI News Intelligence</p>
+                    <p class="text-xs text-[var(--text-secondary)] hidden sm:block">Serverless AI News Intelligence</p>
                 </div>
             </div>
 
@@ -87,15 +107,27 @@
                 </button>
 
                 <!-- Vault Status / Action -->
-                <button id="btnVaultControl" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-white border border-[#e3e2e0] hover:bg-[#f7f6f5] text-[#2f3437] transition">
+                <button id="btnVaultControl" class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] transition">
                     <svg id="vaultIcon" class="w-3.5 h-3.5 mr-1.5 text-[#d9730d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                     <span id="vaultStatusText">Vault Locked</span>
                 </button>
 
+                <!-- Theme Toggle Button (Light / Dark) -->
+                <button id="btnThemeToggle" type="button" title="Toggle Light / Dark Mode" aria-label="Toggle Theme" class="theme-toggle-btn p-2 rounded-md bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition flex items-center justify-center">
+                    <!-- Sun icon (shown in dark mode to switch to light) -->
+                    <svg id="themeIconSun" class="w-4 h-4 text-[#e89547] hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <!-- Moon icon (shown in light mode to switch to dark) -->
+                    <svg id="themeIconMoon" class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+
                 <!-- Vault Settings Modal Trigger -->
-                <button id="btnOpenVaultSettings" title="Vault Settings" class="p-2 rounded-md bg-white border border-[#e3e2e0] hover:bg-[#f7f6f5] text-[#787774] hover:text-[#2f3437] transition">
+                <button id="btnOpenVaultSettings" title="Vault Settings" class="p-2 rounded-md bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -109,17 +141,17 @@
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         <!-- Vault Locked State Notice (Clean Notion Callout) -->
-        <div id="vaultLockedNotice" class="mb-8 p-8 rounded-xl bg-white border border-[#e9e9e7] shadow-sm text-center max-w-lg mx-auto">
-            <div class="w-12 h-12 rounded-full bg-[#faebdd] text-[#d9730d] mx-auto flex items-center justify-center mb-3.5">
+        <div id="vaultLockedNotice" class="mb-8 p-8 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-sm text-center max-w-lg mx-auto">
+            <div class="w-12 h-12 rounded-full bg-[var(--tag-amber-bg)] text-[var(--tag-amber-text)] mx-auto flex items-center justify-center mb-3.5">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
             </div>
-            <h2 class="text-base font-semibold text-[#2f3437] font-heading tracking-tight">Encrypted Client Vault is Locked</h2>
-            <p class="text-xs text-[#787774] max-w-sm mx-auto mt-1.5 mb-5 leading-relaxed">
+            <h2 class="text-base font-semibold text-[var(--text-primary)] font-heading tracking-tight">Encrypted Client Vault is Locked</h2>
+            <p class="text-xs text-[var(--text-secondary)] max-w-sm mx-auto mt-1.5 mb-5 leading-relaxed">
                 Unlock your zero-trust browser vault to load your Supabase persistence, tuning AI chat, and dispatch controls.
             </p>
-            <button id="btnPromptUnlock" class="px-4 py-2 rounded-md text-xs font-medium bg-[#2f3437] hover:bg-[#191919] text-white shadow-xs transition">
+            <button id="btnPromptUnlock" class="px-4 py-2 rounded-md text-xs font-medium bg-[#2f3437] hover:bg-[#191919] dark:bg-[#383838] dark:hover:bg-[#444444] text-white shadow-xs transition">
                 Unlock Vault with Passphrase
             </button>
         </div>
@@ -130,36 +162,36 @@
             <!-- Top Metric & Quick Status Strip -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <!-- Delivery Status -->
-                <div class="bg-white border border-[#e9e9e7] p-4 rounded-xl shadow-xs flex items-center justify-between hover:border-[#d3d2cf] transition">
+                <div class="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-4 rounded-xl shadow-xs flex items-center justify-between hover:border-[var(--border-strong)] transition">
                     <div>
-                        <p class="text-[11px] text-[#787774] font-medium uppercase tracking-wider">Pipeline State</p>
-                        <p id="statActiveState" class="text-sm font-semibold text-[#286638] mt-1">Active & Running</p>
+                        <p class="text-[11px] text-[var(--text-secondary)] font-medium uppercase tracking-wider">Pipeline State</p>
+                        <p id="statActiveState" class="text-sm font-semibold text-[#286638] dark:text-[#6bc97b] mt-1">Active & Running</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggleActiveStatus" class="sr-only peer" checked>
-                        <div class="w-10 h-5 bg-[#e3e2e0] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#d3d2cf] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#286638]"></div>
+                        <div class="w-10 h-5 bg-[var(--border-subtle)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-strong)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#286638] dark:peer-checked:bg-[#4d935f]"></div>
                     </label>
                 </div>
 
                 <!-- Recipient Email -->
-                <div class="bg-white border border-[#e9e9e7] p-4 rounded-xl shadow-xs hover:border-[#d3d2cf] transition">
-                    <p class="text-[11px] text-[#787774] font-medium uppercase tracking-wider">Recipient Address</p>
-                    <p id="statRecipientEmail" class="text-sm font-medium text-[#2f3437] truncate mt-1 font-mono">Loading...</p>
+                <div class="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-4 rounded-xl shadow-xs hover:border-[var(--border-strong)] transition">
+                    <p class="text-[11px] text-[var(--text-secondary)] font-medium uppercase tracking-wider">Recipient Address</p>
+                    <p id="statRecipientEmail" class="text-sm font-medium text-[var(--text-primary)] truncate mt-1 font-mono">Loading...</p>
                 </div>
 
                 <!-- Persona Tone -->
-                <div class="bg-white border border-[#e9e9e7] p-4 rounded-xl shadow-xs hover:border-[#d3d2cf] transition">
-                    <p class="text-[11px] text-[#787774] font-medium uppercase tracking-wider">Persona Tone</p>
-                    <p id="statPersonaTone" class="text-sm font-medium text-[#6940a5] truncate mt-1">Analytical & Direct</p>
+                <div class="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-4 rounded-xl shadow-xs hover:border-[var(--border-strong)] transition">
+                    <p class="text-[11px] text-[var(--text-secondary)] font-medium uppercase tracking-wider">Persona Tone</p>
+                    <p id="statPersonaTone" class="text-sm font-medium text-[#6940a5] dark:text-[#b388ff] truncate mt-1">Analytical & Direct</p>
                 </div>
 
                 <!-- Active Milestones -->
-                <div class="bg-white border border-[#e9e9e7] p-4 rounded-xl shadow-xs flex items-center justify-between hover:border-[#d3d2cf] transition">
+                <div class="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-4 rounded-xl shadow-xs flex items-center justify-between hover:border-[var(--border-strong)] transition">
                     <div>
-                        <p class="text-[11px] text-[#787774] font-medium uppercase tracking-wider">Active Milestones</p>
-                        <p id="statEventCount" class="text-sm font-semibold text-[#185b8c] mt-1">0 Active</p>
+                        <p class="text-[11px] text-[var(--text-secondary)] font-medium uppercase tracking-wider">Active Milestones</p>
+                        <p id="statEventCount" class="text-sm font-semibold text-[#185b8c] dark:text-[#529cca] mt-1">0 Active</p>
                     </div>
-                    <button id="btnQuickAddEvent" class="p-1.5 rounded-md bg-[#f7f6f5] hover:bg-[#f1f0ee] text-[#2f3437] border border-[#e9e9e7] transition" title="Add Milestone">
+                    <button id="btnQuickAddEvent" class="p-1.5 rounded-md bg-[var(--bg-subtle)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] border border-[var(--border-subtle)] transition" title="Add Milestone">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
@@ -174,27 +206,27 @@
                 <div class="lg:col-span-7 space-y-6">
                     
                     <!-- AI Conversational Tuning Drawer (Notion AI Style) -->
-                    <div class="bg-white border border-[#e9e9e7] p-5 rounded-xl flex flex-col h-[490px] shadow-xs">
-                        <div class="flex items-center justify-between pb-3.5 border-b border-[#e9e9e7]">
+                    <div class="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-5 rounded-xl flex flex-col h-[490px] shadow-xs">
+                        <div class="flex items-center justify-between pb-3.5 border-b border-[var(--border-subtle)]">
                             <div class="flex items-center space-x-2.5">
-                                <div class="w-7 h-7 rounded-md bg-[#eae4f2] text-[#6940a5] flex items-center justify-center">
+                                <div class="w-7 h-7 rounded-md bg-[var(--tag-purple-bg)] text-[var(--tag-purple-text)] flex items-center justify-center">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-semibold text-[#2f3437] font-heading">AI Persona & Preference Tuning</h3>
-                                    <p class="text-xs text-[#787774]">Direct conversational adjustments via Gemini</p>
+                                    <h3 class="text-sm font-semibold text-[var(--text-primary)] font-heading">AI Persona & Preference Tuning</h3>
+                                    <p class="text-xs text-[var(--text-secondary)]">Direct conversational adjustments via Gemini</p>
                                 </div>
                             </div>
-                            <span class="text-[11px] px-2 py-0.5 rounded bg-[#eae4f2] text-[#6940a5] font-mono font-medium">Live DB Sync</span>
+                            <span class="text-[11px] px-2 py-0.5 rounded bg-[var(--tag-purple-bg)] text-[var(--tag-purple-text)] font-mono font-medium">Live DB Sync</span>
                         </div>
 
                         <!-- Chat Message History -->
                         <div id="chatHistory" class="flex-1 overflow-y-auto py-3 space-y-3 pr-1 text-xs">
                             <div class="flex items-start space-x-2.5">
-                                <div class="w-6 h-6 rounded-md bg-[#f1f1ef] border border-[#e3e2e0] text-[#5a5a58] flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 font-bold">✨</div>
-                                <div class="p-3.5 rounded-xl rounded-tl-sm bg-[#fcfbf9] border border-[#e9e9e7] text-[#2f3437] text-xs leading-relaxed max-w-[88%] shadow-2xs">
+                                <div class="w-6 h-6 rounded-md bg-[var(--tag-gray-bg)] border border-[var(--tag-gray-border)] text-[var(--tag-gray-text)] flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 font-bold">✨</div>
+                                <div class="p-3.5 rounded-xl rounded-tl-sm bg-[var(--chat-ai-bg)] border border-[var(--chat-ai-border)] text-[var(--chat-ai-text)] text-xs leading-relaxed max-w-[88%] shadow-2xs">
                                     Hi! I synthesize your daily briefing. Tell me what topics to emphasize, change writing tone, or mention upcoming events (e.g. <em>"Add Apple Event on Sept 9"</em> or <em>"Focus more on open-source LLMs with an executive tone"</em>).
                                 </div>
                             </div>
@@ -202,21 +234,21 @@
 
                         <!-- Suggestion Chips -->
                         <div class="py-2.5 flex items-center space-x-2 overflow-x-auto text-xs scrollbar-none">
-                            <button class="chat-chip px-3 py-1 rounded-full bg-[#fcfbf9] hover:bg-[#f1f0ee] border border-[#e3e2e0] text-[#5a5a58] hover:text-[#2f3437] whitespace-nowrap transition">
+                            <button class="chat-chip px-3 py-1 rounded-full bg-[var(--bg-canvas)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] whitespace-nowrap transition">
                                 ⚡ More AI reasoning & agents
                             </button>
-                            <button class="chat-chip px-3 py-1 rounded-full bg-[#fcfbf9] hover:bg-[#f1f0ee] border border-[#e3e2e0] text-[#5a5a58] hover:text-[#2f3437] whitespace-nowrap transition">
+                            <button class="chat-chip px-3 py-1 rounded-full bg-[var(--bg-canvas)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] whitespace-nowrap transition">
                                 🎯 Witty & concise tone
                             </button>
-                            <button class="chat-chip px-3 py-1 rounded-full bg-[#fcfbf9] hover:bg-[#f1f0ee] border border-[#e3e2e0] text-[#5a5a58] hover:text-[#2f3437] whitespace-nowrap transition">
+                            <button class="chat-chip px-3 py-1 rounded-full bg-[var(--bg-canvas)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] whitespace-nowrap transition">
                                 📅 Add key milestone date
                             </button>
                         </div>
 
                         <!-- Chat Input Bar -->
-                        <form id="chatForm" class="pt-2.5 flex items-center space-x-2 border-t border-[#e9e9e7]">
-                            <input type="text" id="chatInput" placeholder="Instruct AI to adjust preferences or dates..." class="flex-1 px-3.5 py-2 text-xs rounded-md bg-white border border-[#e3e2e0] text-[#2f3437] placeholder-[#9b9a97] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437] transition">
-                            <button type="submit" id="btnSendChat" class="px-3.5 py-2 rounded-md text-xs font-medium bg-[#2f3437] hover:bg-[#191919] text-white transition flex items-center space-x-1.5 disabled:opacity-50">
+                        <form id="chatForm" class="pt-2.5 flex items-center space-x-2 border-t border-[var(--border-subtle)]">
+                            <input type="text" id="chatInput" placeholder="Instruct AI to adjust preferences or dates..." class="flex-1 px-3.5 py-2 text-xs rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--input-text)] placeholder-[var(--text-muted)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)] transition">
+                            <button type="submit" id="btnSendChat" class="px-3.5 py-2 rounded-md text-xs font-medium bg-[#2f3437] hover:bg-[#191919] dark:bg-[#383838] dark:hover:bg-[#444444] text-white transition flex items-center space-x-1.5 disabled:opacity-50">
                                 <span>Send</span>
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -226,20 +258,20 @@
                     </div>
 
                     <!-- Milestone Events Deck -->
-                    <div class="bg-white border border-[#e9e9e7] p-5 rounded-xl space-y-4 shadow-xs">
+                    <div class="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-5 rounded-xl space-y-4 shadow-xs">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-2.5">
-                                <div class="w-7 h-7 rounded-md bg-[#d3e5ef] text-[#185b8c] flex items-center justify-center">
+                                <div class="w-7 h-7 rounded-md bg-[var(--tag-blue-bg)] text-[var(--tag-blue-text)] flex items-center justify-center">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-semibold text-[#2f3437] font-heading">Upcoming Milestones & Reminders</h3>
-                                    <p class="text-xs text-[#787774]">Injected into daily email briefs</p>
+                                    <h3 class="text-sm font-semibold text-[var(--text-primary)] font-heading">Upcoming Milestones & Reminders</h3>
+                                    <p class="text-xs text-[var(--text-secondary)]">Injected into daily email briefs</p>
                                 </div>
                             </div>
-                            <button id="btnOpenAddEventModal" class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-white hover:bg-[#f7f6f5] text-[#2f3437] border border-[#e3e2e0] transition">
+                            <button id="btnOpenAddEventModal" class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-[var(--btn-secondary-bg)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] border border-[var(--border-subtle)] transition">
                                 <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
@@ -249,69 +281,76 @@
 
                         <!-- Active Events List -->
                         <div id="activeEventsContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1">
-                            <div class="text-center py-6 text-xs text-[#9b9a97]">No active milestones configured.</div>
+                            <div class="text-center py-6 text-xs text-[var(--text-muted)]">No active milestones configured.</div>
                         </div>
 
                         <!-- Expired Events Accordion -->
-                        <details class="group text-xs border-t border-[#e9e9e7] pt-3">
-                            <summary class="cursor-pointer text-[#787774] hover:text-[#2f3437] font-medium flex items-center justify-between select-none">
+                        <details class="group text-xs border-t border-[var(--border-subtle)] pt-3">
+                            <summary class="cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium flex items-center justify-between select-none">
                                 <span>Past / Expired Milestones</span>
                                 <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                 </svg>
                             </summary>
-                            <div id="expiredEventsContainer" class="mt-3 space-y-1.5 max-h-36 overflow-y-auto text-[#787774]">
-                                <div class="text-[#9b9a97] italic">No expired milestones.</div>
+                            <div id="expiredEventsContainer" class="mt-3 space-y-1.5 max-h-36 overflow-y-auto text-[var(--text-secondary)]">
+                                <div class="text-[var(--text-muted)] italic">No expired milestones.</div>
                             </div>
                         </details>
                     </div>
 
                     <!-- Direct Profile Configuration Accordion -->
-                    <div class="bg-white border border-[#e9e9e7] p-5 rounded-xl space-y-4 shadow-xs">
+                    <div class="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-5 rounded-xl space-y-4 shadow-xs">
                         <div class="flex items-center justify-between">
-                            <h3 class="text-sm font-semibold text-[#2f3437] font-heading">Manual Profile & Engine Settings</h3>
-                            <button id="btnSaveProfileDirect" class="px-3 py-1 text-xs font-medium rounded-md bg-[#2f3437] hover:bg-[#191919] text-white transition">
+                            <h3 class="text-sm font-semibold text-[var(--text-primary)] font-heading">Manual Profile & Engine Settings</h3>
+                            <button id="btnSaveProfileDirect" class="px-3 py-1 text-xs font-medium rounded-md bg-[#2f3437] hover:bg-[#191919] dark:bg-[#383838] dark:hover:bg-[#444444] text-white transition">
                                 Save Settings
                             </button>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                             <div>
-                                <label class="block text-[#787774] mb-1 font-medium">Recipient Email</label>
-                                <input type="email" id="inputRecipientEmail" class="w-full px-3 py-1.5 rounded-md bg-white border border-[#e3e2e0] text-xs text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437] transition">
+                                <label class="block text-[var(--text-secondary)] mb-1 font-medium">Recipient Email</label>
+                                <input type="email" id="inputRecipientEmail" class="w-full px-3 py-1.5 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)] transition">
                             </div>
                             <div>
-                                <label class="block text-[#787774] mb-1 font-medium">Persona Tone</label>
-                                <input type="text" id="inputPersonaTone" class="w-full px-3 py-1.5 rounded-md bg-white border border-[#e3e2e0] text-xs text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437] transition" placeholder="e.g. Analytical & Direct">
+                                <label class="block text-[var(--text-secondary)] mb-1 font-medium">Persona Tone</label>
+                                <input type="text" id="inputPersonaTone" class="w-full px-3 py-1.5 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)] transition" placeholder="e.g. Analytical & Direct">
                             </div>
                             <div>
-                                <label class="block text-[#787774] mb-1 font-medium">Primary LLM Model</label>
-                                <input type="text" id="inputPrimaryModel" class="w-full px-3 py-1.5 rounded-md bg-white border border-[#e3e2e0] text-xs font-mono text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437] transition" value="gemini-3.5-flash-lite">
+                                <label class="block text-[var(--text-secondary)] mb-1 font-medium">Primary LLM Model</label>
+                                <input type="text" id="inputPrimaryModel" class="w-full px-3 py-1.5 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-xs font-mono text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)] transition" value="gemini-3.5-flash-lite">
                             </div>
                             <div>
-                                <label class="block text-[#787774] mb-1 font-medium">Fallback LLM Model</label>
-                                <input type="text" id="inputFallbackModel" class="w-full px-3 py-1.5 rounded-md bg-white border border-[#e3e2e0] text-xs font-mono text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437] transition" value="gemini-3.1-flash-lite">
+                                <label class="block text-[var(--text-secondary)] mb-1 font-medium">Fallback LLM Model</label>
+                                <input type="text" id="inputFallbackModel" class="w-full px-3 py-1.5 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-xs font-mono text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)] transition" value="gemini-3.1-flash-lite">
                             </div>
                             <div>
-                                <label class="block text-[#787774] mb-1 font-medium">Tavily Search Topic</label>
-                                <select id="selectSearchTopic" class="w-full px-3 py-1.5 rounded-md bg-white border border-[#e3e2e0] text-xs text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437] transition">
+                                <label class="block text-[var(--text-secondary)] mb-1 font-medium">Tavily Search Topic</label>
+                                <select id="selectSearchTopic" class="w-full px-3 py-1.5 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)] transition">
                                     <option value="news">news</option>
                                     <option value="general">general</option>
                                     <option value="finance">finance</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-[#787774] mb-1 font-medium">Tavily Search Depth</label>
-                                <select id="selectSearchDepth" class="w-full px-3 py-1.5 rounded-md bg-white border border-[#e3e2e0] text-xs text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437] transition">
+                                <label class="block text-[var(--text-secondary)] mb-1 font-medium">Tavily Search Depth</label>
+                                <select id="selectSearchDepth" class="w-full px-3 py-1.5 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)] transition">
                                     <option value="basic">basic</option>
                                     <option value="advanced">advanced</option>
+                                </select>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block text-[var(--text-secondary)] mb-1 font-medium">Email & Dashboard Theme</label>
+                                <select id="selectTheme" class="w-full px-3 py-1.5 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-xs text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)] transition">
+                                    <option value="light">Notion Light (Warm Ivory Canvas)</option>
+                                    <option value="dark">Notion Dark (Charcoal Slate Canvas)</option>
                                 </select>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs text-[#787774] mb-1 font-medium">Preferences & Focus Summary (Direct Edit)</label>
-                            <textarea id="inputPreferencesSummary" rows="3" class="w-full px-3 py-2 rounded-md bg-white border border-[#e3e2e0] text-xs leading-relaxed text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437] transition"></textarea>
+                            <label class="block text-xs text-[var(--text-secondary)] mb-1 font-medium">Preferences & Focus Summary (Direct Edit)</label>
+                            <textarea id="inputPreferencesSummary" rows="3" class="w-full px-3 py-2 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-xs leading-relaxed text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)] transition"></textarea>
                         </div>
                     </div>
 
@@ -319,20 +358,20 @@
 
                 <!-- Right Column: Briefs Archive Feed (5 cols) -->
                 <div class="lg:col-span-5 space-y-6">
-                    <div class="bg-white border border-[#e9e9e7] p-5 rounded-xl flex flex-col h-full min-h-[550px] shadow-xs">
-                        <div class="flex items-center justify-between pb-3.5 border-b border-[#e9e9e7]">
+                    <div class="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-5 rounded-xl flex flex-col h-full min-h-[550px] shadow-xs">
+                        <div class="flex items-center justify-between pb-3.5 border-b border-[var(--border-subtle)]">
                             <div class="flex items-center space-x-2.5">
-                                <div class="w-7 h-7 rounded-md bg-[#dbeddb] text-[#286638] flex items-center justify-center">
+                                <div class="w-7 h-7 rounded-md bg-[var(--tag-green-bg)] text-[var(--tag-green-text)] flex items-center justify-center">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-sm font-semibold text-[#2f3437] font-heading">Historical Briefs Archive</h3>
-                                    <p class="text-xs text-[#787774]">Past generated intelligence digests</p>
+                                    <h3 class="text-sm font-semibold text-[var(--text-primary)] font-heading">Historical Briefs Archive</h3>
+                                    <p class="text-xs text-[var(--text-secondary)]">Past generated intelligence digests</p>
                                 </div>
                             </div>
-                            <button id="btnRefreshBriefs" class="p-1.5 rounded-md hover:bg-[#f1f0ee] text-[#787774] hover:text-[#2f3437] transition" title="Refresh Briefs">
+                            <button id="btnRefreshBriefs" class="p-1.5 rounded-md hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition" title="Refresh Briefs">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
@@ -341,7 +380,7 @@
 
                         <!-- Briefs Archive List -->
                         <div id="briefsListContainer" class="flex-1 overflow-y-auto py-3 space-y-2 pr-1 text-xs">
-                            <div class="text-center py-10 text-[#9b9a97]">Loading historical briefs...</div>
+                            <div class="text-center py-10 text-[var(--text-muted)]">Loading historical briefs...</div>
                         </div>
                     </div>
                 </div>
@@ -353,29 +392,29 @@
     </main>
 
     <!-- Modal: Vault Passphrase Unlock -->
-    <div id="modalUnlockVault" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-xs hidden">
-        <div class="w-full max-w-md p-6 rounded-xl bg-white border border-[#e9e9e7] shadow-xl space-y-4">
+    <div id="modalUnlockVault" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs hidden">
+        <div class="w-full max-w-md p-6 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-subtle)] shadow-xl space-y-4">
             <div class="text-center">
-                <div class="w-11 h-11 rounded-full bg-[#faebdd] text-[#d9730d] mx-auto flex items-center justify-center mb-2.5">
+                <div class="w-11 h-11 rounded-full bg-[var(--tag-amber-bg)] text-[var(--tag-amber-text)] mx-auto flex items-center justify-center mb-2.5">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                 </div>
-                <h3 class="text-base font-semibold text-[#2f3437] font-heading tracking-tight">Unlock DailyBriefer Vault</h3>
-                <p class="text-xs text-[#787774] mt-1">Enter your master passphrase to decrypt session keys into RAM.</p>
+                <h3 class="text-base font-semibold text-[var(--text-primary)] font-heading tracking-tight">Unlock DailyBriefer Vault</h3>
+                <p class="text-xs text-[var(--text-secondary)] mt-1">Enter your master passphrase to decrypt session keys into RAM.</p>
             </div>
 
             <form id="formUnlockVault" class="space-y-3">
                 <div>
-                    <label class="block text-xs text-[#787774] mb-1 font-medium">Master Passphrase</label>
-                    <input type="password" id="inputUnlockPassphrase" required autofocus placeholder="••••••••" class="w-full px-3.5 py-2 text-sm rounded-md bg-white border border-[#e3e2e0] text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437] transition">
+                    <label class="block text-xs text-[var(--text-secondary)] mb-1 font-medium">Master Passphrase</label>
+                    <input type="password" id="inputUnlockPassphrase" required autofocus placeholder="••••••••" class="w-full px-3.5 py-2 text-sm rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)] transition">
                 </div>
-                <div id="unlockErrorMsg" class="text-xs text-[#c4554d] hidden"></div>
+                <div id="unlockErrorMsg" class="text-xs text-[#c4554d] dark:text-[#ff8585] hidden"></div>
                 <div class="flex items-center justify-between pt-2">
-                    <button type="button" id="btnSwitchToVaultConfig" class="text-xs text-[#787774] hover:text-[#2f3437] hover:underline">
+                    <button type="button" id="btnSwitchToVaultConfig" class="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline">
                         Reconfigure Credentials
                     </button>
-                    <button type="submit" class="px-4 py-2 rounded-md text-xs font-medium bg-[#2f3437] hover:bg-[#191919] text-white transition">
+                    <button type="submit" class="px-4 py-2 rounded-md text-xs font-medium bg-[#2f3437] hover:bg-[#191919] dark:bg-[#383838] dark:hover:bg-[#444444] text-white transition">
                         Unlock
                     </button>
                 </div>
@@ -384,44 +423,44 @@
     </div>
 
     <!-- Modal: Vault Credential Configuration -->
-    <div id="modalVaultConfig" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-xs hidden">
-        <div class="w-full max-w-lg p-6 rounded-xl bg-white border border-[#e9e9e7] shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between pb-2 border-b border-[#e9e9e7]">
-                <h3 class="text-base font-semibold text-[#2f3437] font-heading">Vault Keyring Setup</h3>
-                <button id="btnCloseVaultConfig" class="p-1 rounded-md text-[#787774] hover:text-[#2f3437] hover:bg-[#f1f0ee]">
+    <div id="modalVaultConfig" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs hidden">
+        <div class="w-full max-w-lg p-6 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-subtle)] shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                <h3 class="text-base font-semibold text-[var(--text-primary)] font-heading">Vault Keyring Setup</h3>
+                <button id="btnCloseVaultConfig" class="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
 
-            <p class="text-xs text-[#787774] leading-relaxed">
+            <p class="text-xs text-[var(--text-secondary)] leading-relaxed">
                 Credentials are encrypted client-side using <strong>PBKDF2 (100,000 iterations) + AES-GCM-256</strong>. They never touch any server in plaintext.
             </p>
 
             <form id="formVaultConfig" class="space-y-3 text-xs">
                 <div>
-                    <label class="block text-[#787774] mb-1 font-medium">Supabase Project URL</label>
-                    <input type="url" id="cfgSupabaseUrl" required placeholder="https://xyzcompany.supabase.co" class="w-full px-3 py-2 rounded-md bg-white border border-[#e3e2e0] text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437]">
+                    <label class="block text-[var(--text-secondary)] mb-1 font-medium">Supabase Project URL</label>
+                    <input type="url" id="cfgSupabaseUrl" required placeholder="https://xyzcompany.supabase.co" class="w-full px-3 py-2 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)]">
                 </div>
                 <div>
-                    <label class="block text-[#787774] mb-1 font-medium">Supabase Public Anon Key</label>
-                    <input type="text" id="cfgSupabaseAnonKey" required placeholder="eyJhbGciOiJIUzI1NiIsIn..." class="w-full px-3 py-2 rounded-md bg-white border border-[#e3e2e0] font-mono text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437]">
+                    <label class="block text-[var(--text-secondary)] mb-1 font-medium">Supabase Public Anon Key</label>
+                    <input type="text" id="cfgSupabaseAnonKey" required placeholder="eyJhbGciOiJIUzI1NiIsIn..." class="w-full px-3 py-2 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] font-mono text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)]">
                 </div>
                 <div>
-                    <label class="block text-[#787774] mb-1 font-medium">Google Gemini API Key (For AI Chat Tuning)</label>
-                    <input type="password" id="cfgGeminiKey" required placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-md bg-white border border-[#e3e2e0] font-mono text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437]">
+                    <label class="block text-[var(--text-secondary)] mb-1 font-medium">Google Gemini API Key (For AI Chat Tuning)</label>
+                    <input type="password" id="cfgGeminiKey" required placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] font-mono text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)]">
                 </div>
-                <div class="border-t border-[#e9e9e7] pt-3">
-                    <label class="block text-[#2f3437] font-semibold mb-1">Set Master Passphrase</label>
-                    <input type="password" id="cfgMasterPassphrase" required placeholder="Master passphrase to encrypt your keys" class="w-full px-3 py-2 rounded-md bg-white border border-[#e3e2e0] text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437]">
+                <div class="border-t border-[var(--border-subtle)] pt-3">
+                    <label class="block text-[var(--text-primary)] font-semibold mb-1">Set Master Passphrase</label>
+                    <input type="password" id="cfgMasterPassphrase" required placeholder="Master passphrase to encrypt your keys" class="w-full px-3 py-2 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)]">
                 </div>
 
                 <div class="flex items-center justify-between pt-3">
-                    <button type="button" id="btnClearStoredVault" class="text-xs text-[#c4554d] hover:underline">
+                    <button type="button" id="btnClearStoredVault" class="text-xs text-[#c4554d] dark:text-[#ff8585] hover:underline">
                         Clear Vault Storage
                     </button>
-                    <button type="submit" class="px-4 py-2 rounded-md text-xs font-medium bg-[#2f3437] hover:bg-[#191919] text-white transition">
+                    <button type="submit" class="px-4 py-2 rounded-md text-xs font-medium bg-[#2f3437] hover:bg-[#191919] dark:bg-[#383838] dark:hover:bg-[#444444] text-white transition">
                         Encrypt & Save Vault
                     </button>
                 </div>
@@ -430,11 +469,11 @@
     </div>
 
     <!-- Modal: Add Milestone Event -->
-    <div id="modalAddEvent" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-xs hidden">
-        <div class="w-full max-w-sm p-6 rounded-xl bg-white border border-[#e9e9e7] shadow-xl space-y-4">
-            <div class="flex items-center justify-between pb-2 border-b border-[#e9e9e7]">
-                <h3 class="text-sm font-semibold text-[#2f3437] font-heading">Add Milestone Reminder</h3>
-                <button id="btnCloseAddEvent" class="p-1 rounded-md text-[#787774] hover:text-[#2f3437] hover:bg-[#f1f0ee]">
+    <div id="modalAddEvent" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs hidden">
+        <div class="w-full max-w-sm p-6 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-subtle)] shadow-xl space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+                <h3 class="text-sm font-semibold text-[var(--text-primary)] font-heading">Add Milestone Reminder</h3>
+                <button id="btnCloseAddEvent" class="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -443,18 +482,18 @@
 
             <form id="formAddEvent" class="space-y-3 text-xs">
                 <div>
-                    <label class="block text-[#787774] mb-1 font-medium">Milestone Title</label>
-                    <input type="text" id="inputEventTitle" required placeholder="e.g. Apple Keynote, Q3 Earnings" class="w-full px-3 py-2 rounded-md bg-white border border-[#e3e2e0] text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437]">
+                    <label class="block text-[var(--text-secondary)] mb-1 font-medium">Milestone Title</label>
+                    <input type="text" id="inputEventTitle" required placeholder="e.g. Apple Keynote, Q3 Earnings" class="w-full px-3 py-2 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)]">
                 </div>
                 <div>
-                    <label class="block text-[#787774] mb-1 font-medium">Target Date</label>
-                    <input type="date" id="inputEventDate" required class="w-full px-3 py-2 rounded-md bg-white border border-[#e3e2e0] text-[#2f3437] focus:border-[#2f3437] focus:ring-1 focus:ring-[#2f3437]">
+                    <label class="block text-[var(--text-secondary)] mb-1 font-medium">Target Date</label>
+                    <input type="date" id="inputEventDate" required class="w-full px-3 py-2 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)]">
                 </div>
                 <div class="pt-2 flex justify-end space-x-2">
-                    <button type="button" id="btnCancelAddEvent" class="px-3 py-1.5 rounded-md bg-white hover:bg-[#f7f6f5] border border-[#e3e2e0] text-[#2f3437]">
+                    <button type="button" id="btnCancelAddEvent" class="px-3 py-1.5 rounded-md bg-[var(--btn-secondary-bg)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] text-[var(--text-primary)]">
                         Cancel
                     </button>
-                    <button type="submit" class="px-3.5 py-1.5 rounded-md bg-[#2f3437] hover:bg-[#191919] text-white font-medium">
+                    <button type="submit" class="px-3.5 py-1.5 rounded-md bg-[#2f3437] hover:bg-[#191919] dark:bg-[#383838] dark:hover:bg-[#444444] text-white font-medium">
                         Add Event
                     </button>
                 </div>
@@ -463,20 +502,20 @@
     </div>
 
     <!-- Modal: Brief Inspector (HTML Preview & Source) -->
-    <div id="modalInspectBrief" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-xs hidden">
-        <div class="w-full max-w-4xl p-6 rounded-xl bg-white border border-[#e9e9e7] shadow-xl space-y-4 max-h-[95vh] flex flex-col">
-            <div class="flex items-center justify-between pb-3 border-b border-[#e9e9e7]">
+    <div id="modalInspectBrief" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs hidden">
+        <div class="w-full max-w-4xl p-6 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-subtle)] shadow-xl space-y-4 max-h-[95vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
                 <div class="truncate mr-4">
-                    <h3 id="inspectBriefSubject" class="text-base font-semibold text-[#2f3437] font-heading truncate">Digest Preview</h3>
-                    <p id="inspectBriefDate" class="text-xs text-[#787774] font-mono">Date</p>
+                    <h3 id="inspectBriefSubject" class="text-base font-semibold text-[var(--text-primary)] font-heading truncate">Digest Preview</h3>
+                    <p id="inspectBriefDate" class="text-xs text-[var(--text-secondary)] font-mono">Date</p>
                 </div>
                 <div class="flex items-center space-x-2 flex-shrink-0">
                     <!-- Tab Switchers (Notion Segmented Control) -->
-                    <div class="flex rounded-md bg-[#f7f6f5] p-0.5 border border-[#e9e9e7] text-xs">
-                        <button id="btnTabRendered" class="px-3 py-1 rounded bg-white text-[#2f3437] shadow-2xs font-medium">Preview</button>
-                        <button id="btnTabRaw" class="px-3 py-1 rounded text-[#787774] hover:text-[#2f3437]">Raw HTML</button>
+                    <div class="flex rounded-md bg-[var(--bg-subtle)] p-0.5 border border-[var(--border-subtle)] text-xs">
+                        <button id="btnTabRendered" class="px-3 py-1 rounded bg-[var(--bg-card)] text-[var(--text-primary)] shadow-2xs font-medium">Preview</button>
+                        <button id="btnTabRaw" class="px-3 py-1 rounded text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Raw HTML</button>
                     </div>
-                    <button id="btnCloseInspectBrief" class="p-1.5 rounded-md hover:bg-[#f1f0ee] text-[#787774] hover:text-[#2f3437]">
+                    <button id="btnCloseInspectBrief" class="p-1.5 rounded-md hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -486,8 +525,8 @@
 
             <!-- Content Area -->
             <div class="flex-1 overflow-hidden min-h-[500px]">
-                <iframe id="briefIframe" class="email-preview-frame w-full h-full border border-[#e9e9e7] rounded-lg"></iframe>
-                <pre id="briefRawCode" class="hidden w-full h-full p-4 bg-[#fcfbf9] text-[#2f3437] font-mono text-xs overflow-auto rounded-lg border border-[#e9e9e7] select-all"></pre>
+                <iframe id="briefIframe" class="email-preview-frame w-full h-full border border-[var(--border-subtle)] rounded-lg"></iframe>
+                <pre id="briefRawCode" class="hidden w-full h-full p-4 bg-[var(--bg-canvas)] text-[var(--text-primary)] font-mono text-xs overflow-auto rounded-lg border border-[var(--border-subtle)] select-all"></pre>
             </div>
         </div>
     </div>
@@ -496,6 +535,8 @@
     <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 max-w-sm pointer-events-none"></div>
 
     <!-- Application Script Entrypoint -->
-    <script type="module" src="js/app.js?v=2.0.6"></script>
+    <script type="module" src="js/app.js?v=2.1.0"></script>
+</body>
+</html>></script>
 </body>
 </html>

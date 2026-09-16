@@ -199,13 +199,16 @@ Example Output:
     ) -> Dict[str, str]:
         """
         Synthesize news articles and active event milestones into a structured HTML email brief.
-        Returns a dict with 'subject' and 'html'.
+        Returns a dict with 'subject' and 'html', formatted to match the user's web theme (light or dark).
         """
         today_str = datetime.datetime.now(datetime.timezone.utc).strftime("%A, %B %d, %Y")
         today_iso = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
 
         persona_tone = profile.get("persona_tone", "Analytical & Direct")
         preferences_summary = profile.get("preferences_summary", "Focus on software engineering, AI, and global news.")
+        theme = str(profile.get("theme") or profile.get("email_theme") or "light").lower().strip()
+        if theme not in ("light", "dark"):
+            theme = "light"
 
         # Prepare articles context
         articles_context = []
@@ -242,6 +245,40 @@ Example Output:
 
         has_events = len(active_events) > 0
 
+        # Theme-specific email guidelines
+        if theme == "dark":
+            theme_guidelines = f"""Design & Layout Guidelines for the HTML string (NOTION DARK THEME):
+- Modern inline CSS styles suitable for email clients (Gmail, Apple Mail, Outlook).
+- Max-width 640px centered container matching Notion Dark aesthetic.
+- Color & Surface Palette:
+  - Outer body canvas: #191919
+  - Main container card: #202020 with border: 1px solid #2e2e2e; border-radius: 12px; padding: 32px;
+  - Story cards: #262626 with border: 1px solid #333333; border-radius: 8px; padding: 16px; margin-bottom: 20px;
+  - Milestone highlight panel: #262626 with border-left: 4px solid #b388ff; border: 1px solid #333333; border-radius: 8px; padding: 16px; margin-top: 24px;
+- Typography:
+  - Primary headings & titles: #ebebeb (crisp, bold, readable)
+  - Body text & bullet points: #d4d4d4 with line-height: 1.6;
+  - Secondary metadata & dates: #9b9a97
+  - Header monogram badge: #2f2f2f background with #ebebeb text, 1px solid #444444 border
+  - Source links & pills: Notion Coral (#eb5757) clickable link: `<a href="URL" style="color: #eb5757; text-decoration: none; font-size: 13px; font-weight: 600;">Source: Domain.com →</a>`
+  - Footer: border-top: 1px solid #2e2e2e; color: #6f6e6b; text-align: center; font-size: 12px; margin-top: 32px; padding-top: 16px;"""
+        else:
+            theme_guidelines = f"""Design & Layout Guidelines for the HTML string (NOTION LIGHT THEME):
+- Modern inline CSS styles suitable for email clients (Gmail, Apple Mail, Outlook).
+- Max-width 640px centered container matching Notion Light aesthetic.
+- Color & Surface Palette:
+  - Outer body canvas: #fcfbf9 (warm clean ivory)
+  - Main container card: #ffffff with border: 1px solid #e9e9e7; border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  - Story cards: #f7f6f5 with border: 1px solid #e9e9e7; border-radius: 8px; padding: 16px; margin-bottom: 20px;
+  - Milestone highlight panel: #f7f6f5 with border-left: 4px solid #6940a5; border: 1px solid #e9e9e7; border-radius: 8px; padding: 16px; margin-top: 24px;
+- Typography:
+  - Primary headings & titles: #2f3437 (Notion charcoal, bold, readable)
+  - Body text & bullet points: #37352f with line-height: 1.6;
+  - Secondary metadata & dates: #787774
+  - Header monogram badge: #2f3437 background with #ffffff text, border-radius: 6px;
+  - Source links & pills: Notion Coral (#e16259) clickable link: `<a href="URL" style="color: #e16259; text-decoration: none; font-size: 13px; font-weight: 600;">Source: Domain.com →</a>`
+  - Footer: border-top: 1px solid #e9e9e7; color: #9b9a97; text-align: center; font-size: 12px; margin-top: 32px; padding-top: 16px;"""
+
         prompt = f"""You are DailyBriefer, an executive AI intelligence synthesizer.
 Today is {today_str}.
 
@@ -251,6 +288,8 @@ User Profile & Preferences:
 Target Persona & Tone:
 {persona_tone}
 
+Email Design Theme: {theme.upper()}
+
 Active Event Reminders & Milestones:
 {events_text}
 
@@ -258,14 +297,12 @@ Raw News Articles Aggregated from Search:
 {articles_text}
 
 Task:
-Synthesize the news into a top-tier executive briefing matching the user's persona tone.
+Synthesize the news into a top-tier executive briefing matching the user's persona tone and requested theme.
 Deliver the output as a STRICT JSON object with two fields:
 1. "subject": A punchy, insightful email subject line containing today's date and the top headline (e.g. "DailyBriefer · Oct 24: AI Reasoning Leap & Tech Macro Highlights")
 2. "html": A complete, modern, responsive HTML email string formatted for high readability.
 
-Design & Layout Guidelines for the HTML string:
-- Modern inline CSS styles suitable for email clients (Gmail, Apple Mail, Outlook).
-- Max-width 640px centered container with clean background (#0f172a / #1e293b dark container or dark slate palette, high contrast clean text #f8fafc and #94a3b8).
+{theme_guidelines}
 - Include a sleek header with "DAILY BRIEFER" logo badge, date ({today_str}), and a 1-sentence executive summary.
 - Group the briefing into 3-4 structured thematic sections (e.g., "AI & Machine Intelligence", "Engineering & Systems", "Global & Tech Macro").
 - For each key story:
@@ -273,7 +310,7 @@ Design & Layout Guidelines for the HTML string:
   - Concise analytical synthesis with bullet points highlighting key takeaways
   - A subtle clickable pill/link to the source URL (e.g. `<a href="URL" style="...">Source: Domain.com →</a>`)
 {f'- Include an "Upcoming Milestones & Reminders" section at the bottom listing the active countdowns.' if has_events else '- DO NOT include any empty Milestones section since there are no active reminders.'}
-- Sleek footer noting that preferences can be adjusted anytime on the web dashboard.
+- Sleek footer noting that preferences and theme can be adjusted anytime on the web dashboard.
 - Output ONLY valid JSON: {{"subject": "...", "html": "..."}}
 """
 
@@ -297,7 +334,7 @@ Design & Layout Guidelines for the HTML string:
 
         # Fallback formatting if JSON parsing failed
         fallback_subject = f"Daily Intelligence Brief · {today_str}"
-        fallback_html = self._create_fallback_html(today_str, articles, active_events)
+        fallback_html = self._create_fallback_html(today_str, articles, active_events, theme=theme)
         return {
             "subject": fallback_subject,
             "html": fallback_html,
@@ -308,24 +345,41 @@ Design & Layout Guidelines for the HTML string:
         today_str: str,
         articles: List[Article],
         events: List[Dict[str, Any]],
+        theme: str = "light",
     ) -> str:
-        """Create clean fallback HTML email if LLM JSON format fails."""
+        """Create clean fallback HTML email matching the requested theme if LLM JSON format fails."""
+        is_dark = str(theme).lower().strip() == "dark"
+
+        # Theme color variables
+        outer_bg = "#191919" if is_dark else "#fcfbf9"
+        card_bg = "#202020" if is_dark else "#ffffff"
+        card_border = "#2e2e2e" if is_dark else "#e9e9e7"
+        story_bg = "#262626" if is_dark else "#f7f6f5"
+        story_border = "#333333" if is_dark else "#e9e9e7"
+        text_primary = "#ebebeb" if is_dark else "#2f3437"
+        text_body = "#d4d4d4" if is_dark else "#37352f"
+        text_muted = "#9b9a97" if is_dark else "#787774"
+        accent_color = "#eb5757" if is_dark else "#e16259"
+        badge_bg = "#2f2f2f" if is_dark else "#2f3437"
+        badge_text = "#ebebeb" if is_dark else "#ffffff"
+        callout_border = "#b388ff" if is_dark else "#6940a5"
+
         articles_html = ""
         for art in articles[:10]:
             articles_html += f"""
-            <div style="margin-bottom: 20px; padding: 16px; background-color: #1e293b; border-radius: 8px; border-left: 4px solid #38bdf8;">
-                <h3 style="margin: 0 0 8px 0; color: #f8fafc; font-size: 16px;">{art.title}</h3>
-                <p style="margin: 0 0 10px 0; color: #94a3b8; font-size: 14px; line-height: 1.5;">{art.content}</p>
-                <a href="{art.url}" style="color: #38bdf8; text-decoration: none; font-size: 13px; font-weight: bold;">Read Source →</a>
+            <div style="margin-bottom: 18px; padding: 16px; background-color: {story_bg}; border-radius: 8px; border: 1px solid {story_border}; border-left: 4px solid {accent_color};">
+                <h3 style="margin: 0 0 8px 0; color: {text_primary}; font-size: 16px; font-weight: 600;">{art.title}</h3>
+                <p style="margin: 0 0 10px 0; color: {text_body}; font-size: 14px; line-height: 1.5;">{art.content}</p>
+                <a href="{art.url}" style="color: {accent_color}; text-decoration: none; font-size: 13px; font-weight: bold;">Read Source →</a>
             </div>
             """
 
         events_html = ""
         if events:
-            events_items = "".join([f"<li style='margin-bottom: 6px; color: #cbd5e1;'><strong>{e.get('title')}</strong> — {e.get('event_date')}</li>" for e in events])
+            events_items = "".join([f"<li style='margin-bottom: 6px; color: {text_body};'><strong>{e.get('title')}</strong> — {e.get('event_date')}</li>" for e in events])
             events_html = f"""
-            <div style="margin-top: 30px; padding: 16px; background-color: #1e293b; border-radius: 8px; border-left: 4px solid #a855f7;">
-                <h3 style="margin: 0 0 10px 0; color: #f8fafc; font-size: 15px;">Upcoming Milestones</h3>
+            <div style="margin-top: 26px; padding: 16px; background-color: {story_bg}; border-radius: 8px; border: 1px solid {story_border}; border-left: 4px solid {callout_border};">
+                <h3 style="margin: 0 0 10px 0; color: {text_primary}; font-size: 15px; font-weight: 600;">Upcoming Milestones</h3>
                 <ul style="margin: 0; padding-left: 20px;">{events_items}</ul>
             </div>
             """
@@ -334,17 +388,17 @@ Design & Layout Guidelines for the HTML string:
         <!DOCTYPE html>
         <html>
         <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-        <body style="margin:0; padding:24px; background-color:#0b1120; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-            <div style="max-width:640px; margin:0 auto; background-color:#0f172a; padding:32px; border-radius:12px; border:1px solid #334155; color:#f8fafc;">
-                <div style="border-bottom:1px solid #334155; padding-bottom:16px; margin-bottom:24px;">
-                    <span style="font-size:12px; font-weight:700; color:#38bdf8; letter-spacing:1.5px; text-transform:uppercase;">Daily Intelligence Digest</span>
-                    <h1 style="margin:8px 0 4px 0; font-size:22px; color:#f8fafc;">DailyBriefer Executive Summary</h1>
-                    <p style="margin:0; font-size:13px; color:#64748b;">{today_str}</p>
+        <body style="margin:0; padding:24px; background-color:{outer_bg}; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+            <div style="max-width:640px; margin:0 auto; background-color:{card_bg}; padding:32px; border-radius:12px; border:1px solid {card_border}; color:{text_primary};">
+                <div style="border-bottom:1px solid {card_border}; padding-bottom:16px; margin-bottom:24px;">
+                    <span style="display:inline-block; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; background-color:{badge_bg}; color:{badge_text}; letter-spacing:1px; text-transform:uppercase;">Daily Intelligence Digest</span>
+                    <h1 style="margin:10px 0 4px 0; font-size:22px; color:{text_primary}; font-weight:700;">DailyBriefer Executive Summary</h1>
+                    <p style="margin:0; font-size:13px; color:{text_muted};">{today_str}</p>
                 </div>
                 <div>{articles_html}</div>
                 {events_html}
-                <div style="margin-top:32px; padding-top:16px; border-top:1px solid #334155; text-align:center; font-size:12px; color:#64748b;">
-                    Generated automatically by DailyBriefer v2 · Serverless AI Intelligence
+                <div style="margin-top:32px; padding-top:16px; border-top:1px solid {card_border}; text-align:center; font-size:12px; color:{text_muted};">
+                    Generated automatically by DailyBriefer v2 · Serverless AI Intelligence ({theme.capitalize()} Theme)
                 </div>
             </div>
         </body>

@@ -14,8 +14,12 @@ CREATE TABLE IF NOT EXISTS public.profile (
     primary_model TEXT NOT NULL DEFAULT 'gemini-3.5-flash-lite',
     fallback_model TEXT NOT NULL DEFAULT 'gemini-3.1-flash-lite',
     max_search_queries INT NOT NULL DEFAULT 4,
+    theme TEXT NOT NULL DEFAULT 'light' CHECK (theme IN ('light', 'dark')),
     updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
+
+-- Idempotent column addition for existing database instances:
+ALTER TABLE public.profile ADD COLUMN IF NOT EXISTS theme TEXT NOT NULL DEFAULT 'light';
 
 -- 2. Event Milestones & Target Reminders
 CREATE TABLE IF NOT EXISTS public.events (
@@ -50,7 +54,8 @@ INSERT INTO public.profile (
     search_depth,
     primary_model,
     fallback_model,
-    max_search_queries
+    max_search_queries,
+    theme
 ) VALUES (
     1,
     'user@example.com',
@@ -61,5 +66,6 @@ INSERT INTO public.profile (
     'basic',
     'gemini-3.5-flash-lite',
     'gemini-3.1-flash-lite',
-    4
+    4,
+    'light'
 ) ON CONFLICT (id) DO NOTHING;

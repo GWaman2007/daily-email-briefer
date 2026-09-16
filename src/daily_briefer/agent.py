@@ -58,9 +58,13 @@ def run_pipeline(config_override: Optional[Config] = None) -> int:
         search_topic = profile.get("search_topic", "").strip() or config.search_topic
         search_depth = profile.get("search_depth", "").strip() or config.search_depth
         max_queries = profile.get("max_search_queries") or config.max_search_queries
+        theme_raw = profile.get("theme", "").strip() or config.theme or "light"
+        theme = theme_raw.lower() if theme_raw.lower() in ("light", "dark") else "light"
+        profile["theme"] = theme
 
         logger.info(f"Target Recipient: {recipient_email}")
         logger.info(f"Persona Tone: {profile.get('persona_tone')}")
+        logger.info(f"Email & Web Theme: '{theme}'")
         logger.info(f"Model Stack: Primary='{primary_model}', Fallback='{fallback_model}'")
         logger.info(f"Search Config: Topic='{search_topic}', Depth='{search_depth}', MaxQueries={max_queries}")
 

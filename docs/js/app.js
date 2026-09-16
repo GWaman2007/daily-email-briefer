@@ -42,6 +42,9 @@ const elements = {
     btnVaultControl: document.getElementById('btnVaultControl'),
     vaultIcon: document.getElementById('vaultIcon'),
     vaultStatusText: document.getElementById('vaultStatusText'),
+    btnThemeToggle: document.getElementById('btnThemeToggle'),
+    themeIconSun: document.getElementById('themeIconSun'),
+    themeIconMoon: document.getElementById('themeIconMoon'),
     btnOpenVaultSettings: document.getElementById('btnOpenVaultSettings'),
 
     // Main Deck
@@ -76,6 +79,7 @@ const elements = {
     inputFallbackModel: document.getElementById('inputFallbackModel'),
     selectSearchTopic: document.getElementById('selectSearchTopic'),
     selectSearchDepth: document.getElementById('selectSearchDepth'),
+    selectTheme: document.getElementById('selectTheme'),
     inputPreferencesSummary: document.getElementById('inputPreferencesSummary'),
 
     // Briefs Archive
@@ -123,17 +127,17 @@ const elements = {
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast pointer-events-auto p-3.5 rounded-lg shadow-md border text-xs font-medium flex items-center justify-between space-x-3 transition-all duration-300 ${
-        type === 'success' ? 'bg-white border-[#c3dfc3] text-[#286638]' :
-        type === 'error' ? 'bg-white border-[#ffe2dd] text-[#c4554d]' :
-        type === 'warning' ? 'bg-white border-[#faebdd] text-[#d9730d]' :
-        'bg-white border-[#e9e9e7] text-[#2f3437]'
+        type === 'success' ? 'bg-[var(--bg-card)] border-[#c3dfc3] dark:border-[#29462f] text-[#286638] dark:text-[#6bc97b]' :
+        type === 'error' ? 'bg-[var(--bg-card)] border-[#ffe2dd] dark:border-[#502828] text-[#c4554d] dark:text-[#ff8585]' :
+        type === 'warning' ? 'bg-[var(--bg-card)] border-[#faebdd] dark:border-[#50371a] text-[#d9730d] dark:text-[#e89547]' :
+        'bg-[var(--toast-bg)] border-[var(--toast-border)] text-[var(--toast-text)]'
     }`;
 
     toast.innerHTML = `
         <div class="flex items-center space-x-2">
             <span>${message}</span>
         </div>
-        <button class="text-[#787774] hover:text-[#2f3437] font-semibold text-sm">&times;</button>
+        <button class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-semibold text-sm">&times;</button>
     `;
 
     toast.querySelector('button').onclick = () => toast.remove();
@@ -145,9 +149,72 @@ function showToast(message, type = 'info') {
 }
 
 /**
+ * Initialize theme from localStorage or system preference.
+ */
+function initTheme() {
+    const savedTheme = localStorage.getItem('dailybriefer_theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    applyTheme(initialTheme, false, false);
+
+    // Listen for system theme changes if no explicit user override is stored
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('dailybriefer_theme')) {
+                applyTheme(e.matches ? 'dark' : 'light', false, false);
+            }
+        });
+    }
+}
+
+/**
+ * Apply selected theme to DOM and optionally sync to storage/profile.
+ */
+function applyTheme(theme, saveToStorage = true, syncToProfile = false) {
+    const isDark = theme === 'dark';
+    if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if (elements.themeIconSun) elements.themeIconSun.classList.remove('hidden');
+        if (elements.themeIconMoon) elements.themeIconMoon.classList.add('hidden');
+    } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+        if (elements.themeIconSun) elements.themeIconSun.classList.add('hidden');
+        if (elements.themeIconMoon) elements.themeIconMoon.classList.remove('hidden');
+    }
+
+    if (elements.selectTheme) {
+        elements.selectTheme.value = theme;
+    }
+
+    if (saveToStorage) {
+        localStorage.setItem('dailybriefer_theme', theme);
+    }
+
+    if (syncToProfile && isSessionUnlocked() && currentProfile) {
+        currentProfile.theme = theme;
+        updateProfile({ theme }).catch(err => {
+            console.warn('Could not auto-sync theme preference to database:', err);
+        });
+    }
+}
+
+/**
+ * Toggle between light and dark modes.
+ */
+function toggleTheme() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const nextTheme = isDark ? 'light' : 'dark';
+    applyTheme(nextTheme, true, true);
+    showToast(`Switched to ${nextTheme === 'dark' ? 'Dark' : 'Light'} Mode`, 'info');
+}
+
+/**
  * Initialize application lifecycle.
  */
 function init() {
+    initTheme();
     setupEventListeners();
     checkVaultState();
 }
@@ -228,6 +295,13 @@ async function loadProfileData() {
         elements.selectSearchDepth.value = currentProfile.search_depth || 'basic';
         elements.inputPreferencesSummary.value = currentProfile.preferences_summary || '';
 
+        // Synchronize theme preference from profile if set
+        if (currentProfile.theme) {
+            applyTheme(currentProfile.theme, true, false);
+        } else if (elements.selectTheme) {
+            elements.selectTheme.value = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        }
+
     } catch (err) {
         console.error('Error loading profile:', err);
         showToast(`Failed to load profile: ${err.message}`, 'error');
@@ -258,24 +332,24 @@ async function loadEventsData() {
 
                 let badge = '';
                 if (diffDays === 0) {
-                    badge = '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-[#ffe2dd] text-[#c4554d] border border-[#f5c6cb] animate-pulse">TODAY!</span>';
+                    badge = '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-[var(--accent-coral-bg)] text-[var(--accent-coral-text)] border border-[var(--accent-coral-text)]/30 animate-pulse">TODAY!</span>';
                 } else if (diffDays === 1) {
-                    badge = '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-[#faebdd] text-[#d9730d] border border-[#f5d9bc]">Tomorrow</span>';
+                    badge = '<span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-[var(--tag-amber-bg)] text-[var(--tag-amber-text)] border border-[var(--tag-amber-border)]">Tomorrow</span>';
                 } else if (diffDays > 1) {
-                    badge = `<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#d3e5ef] text-[#185b8c] border border-[#b8d5e8]">in ${diffDays} days</span>`;
+                    badge = `<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[var(--tag-blue-bg)] text-[var(--tag-blue-text)] border border-[var(--tag-blue-border)]">in ${diffDays} days</span>`;
                 } else {
-                    badge = '<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#f1f1ef] text-[#787774]">Passed</span>';
+                    badge = '<span class="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[var(--tag-gray-bg)] text-[var(--tag-gray-text)]">Passed</span>';
                 }
 
                 return `
-                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-[#fcfbf9] border border-[#e9e9e7] hover:border-[#d3d2cf] transition">
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-[var(--bg-canvas)] border border-[var(--border-subtle)] hover:border-[var(--border-strong)] transition">
                         <div class="flex items-center space-x-2.5 truncate mr-2">
-                            <span class="w-1.5 h-1.5 rounded-full bg-[#2f3437]"></span>
-                            <span class="font-medium text-[#2f3437] truncate">${escapeHtml(ev.title)}</span>
-                            <span class="text-[#787774] text-[11px] font-mono">(${ev.event_date})</span>
+                            <span class="w-1.5 h-1.5 rounded-full bg-[var(--text-primary)]"></span>
+                            <span class="font-medium text-[var(--text-primary)] truncate">${escapeHtml(ev.title)}</span>
+                            <span class="text-[var(--text-secondary)] text-[11px] font-mono">(${ev.event_date})</span>
                             ${badge}
                         </div>
-                        <button data-delete-event="${ev.id}" class="p-1 rounded text-[#787774] hover:text-[#c4554d] hover:bg-[#ffe2dd]/50 transition" title="Delete Milestone">
+                        <button data-delete-event="${ev.id}" class="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--accent-coral-text)] hover:bg-[var(--accent-coral-bg)] transition" title="Delete Milestone">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
@@ -287,12 +361,12 @@ async function loadEventsData() {
 
         // Render expired events
         if (expiredEvents.length === 0) {
-            elements.expiredEventsContainer.innerHTML = '<div class="text-[#9b9a97] italic">No expired milestones.</div>';
+            elements.expiredEventsContainer.innerHTML = '<div class="text-[var(--text-muted)] italic">No expired milestones.</div>';
         } else {
             elements.expiredEventsContainer.innerHTML = expiredEvents.map(ev => `
-                <div class="flex items-center justify-between py-1 px-2 rounded hover:bg-[#f7f6f5]">
-                    <span class="line-through text-[#9b9a97]">${escapeHtml(ev.title)}</span>
-                    <span class="text-[#9b9a97] text-[10px] font-mono">${ev.event_date}</span>
+                <div class="flex items-center justify-between py-1 px-2 rounded hover:bg-[var(--bg-hover)]">
+                    <span class="line-through text-[var(--text-muted)]">${escapeHtml(ev.title)}</span>
+                    <span class="text-[var(--text-muted)] text-[10px] font-mono">${ev.event_date}</span>
                 </div>
             `).join('');
         }
@@ -322,12 +396,12 @@ async function loadBriefsData() {
             });
 
             return `
-                <div data-brief-id="${b.id}" class="brief-item p-3 rounded-lg bg-[#fcfbf9] border border-[#e9e9e7] hover:border-[#2f3437] hover:bg-white transition cursor-pointer group shadow-2xs">
+                <div data-brief-id="${b.id}" class="brief-item p-3 rounded-lg bg-[var(--bg-canvas)] border border-[var(--border-subtle)] hover:border-[var(--text-primary)] hover:bg-[var(--bg-card)] transition cursor-pointer group shadow-2xs">
                     <div class="flex items-center justify-between mb-1">
-                        <span class="text-[10px] font-mono text-[#787774]">${dateStr}</span>
-                        <span class="text-[10px] text-[#787774] group-hover:text-[#2f3437] font-medium transition">View Digest →</span>
+                        <span class="text-[10px] font-mono text-[var(--text-secondary)]">${dateStr}</span>
+                        <span class="text-[10px] text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] font-medium transition">View Digest →</span>
                     </div>
-                    <h4 class="font-medium text-[#2f3437] line-clamp-2 leading-snug">${escapeHtml(b.subject)}</h4>
+                    <h4 class="font-medium text-[var(--text-primary)] line-clamp-2 leading-snug">${escapeHtml(b.subject)}</h4>
                 </div>
             `;
         }).join('');
@@ -369,13 +443,13 @@ async function openBriefModal(briefId) {
 
 function switchBriefTab(tab) {
     if (tab === 'rendered') {
-        elements.btnTabRendered.className = 'px-3 py-1 rounded bg-white text-[#2f3437] shadow-2xs font-medium';
-        elements.btnTabRaw.className = 'px-3 py-1 rounded text-[#787774] hover:text-[#2f3437]';
+        elements.btnTabRendered.className = 'px-3 py-1 rounded bg-[var(--bg-card)] text-[var(--text-primary)] shadow-2xs font-medium';
+        elements.btnTabRaw.className = 'px-3 py-1 rounded text-[var(--text-secondary)] hover:text-[var(--text-primary)]';
         elements.briefIframe.classList.remove('hidden');
         elements.briefRawCode.classList.add('hidden');
     } else {
-        elements.btnTabRaw.className = 'px-3 py-1 rounded bg-white text-[#2f3437] shadow-2xs font-medium';
-        elements.btnTabRendered.className = 'px-3 py-1 rounded text-[#787774] hover:text-[#2f3437]';
+        elements.btnTabRaw.className = 'px-3 py-1 rounded bg-[var(--bg-card)] text-[var(--text-primary)] shadow-2xs font-medium';
+        elements.btnTabRendered.className = 'px-3 py-1 rounded text-[var(--text-secondary)] hover:text-[var(--text-primary)]';
         elements.briefRawCode.classList.remove('hidden');
         elements.briefIframe.classList.add('hidden');
     }
@@ -436,30 +510,29 @@ async function handleChatSubmit(e) {
         elements.btnSendChat.disabled = false;
     }
 }
-
 function appendChatMessage(sender, text) {
     const div = document.createElement('div');
     if (sender === 'user') {
         div.className = 'flex items-start justify-end space-x-2.5';
         div.innerHTML = `
-            <div class="p-3.5 rounded-xl rounded-tr-sm bg-[#eae4f2] border border-[#d8cee6] text-[#2f3437] text-xs leading-relaxed max-w-[85%]">
+            <div class="p-3.5 rounded-xl rounded-tr-sm bg-[var(--chat-user-bg)] border border-[var(--chat-user-border)] text-[var(--chat-user-text)] text-xs leading-relaxed max-w-[85%]">
                 ${escapeHtml(text)}
             </div>
-            <div class="w-6 h-6 rounded-md bg-[#2f3437] text-white flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 font-bold">U</div>
+            <div class="w-6 h-6 rounded-md bg-[#2f3437] dark:bg-[#383838] dark:border dark:border-[#444444] text-white flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 font-bold">U</div>
         `;
     } else if (sender === 'error') {
         div.className = 'flex items-start space-x-2.5';
         div.innerHTML = `
-            <div class="w-6 h-6 rounded-md bg-[#ffe2dd] text-[#c4554d] flex items-center justify-center text-xs flex-shrink-0 mt-0.5 font-bold">!</div>
-            <div class="p-3.5 rounded-xl rounded-tl-sm bg-[#ffe2dd]/50 border border-[#f5c6cb] text-[#c4554d] text-xs leading-relaxed max-w-[85%]">
+            <div class="w-6 h-6 rounded-md bg-[#ffe2dd] dark:bg-[#3c2424] text-[#c4554d] dark:text-[#ff8585] flex items-center justify-center text-xs flex-shrink-0 mt-0.5 font-bold">!</div>
+            <div class="p-3.5 rounded-xl rounded-tl-sm bg-[#ffe2dd]/50 dark:bg-[#3c2424]/50 border border-[#f5c6cb] dark:border-[#502828] text-[#c4554d] dark:text-[#ff8585] text-xs leading-relaxed max-w-[85%]">
                 ${escapeHtml(text)}
             </div>
         `;
     } else {
         div.className = 'flex items-start space-x-2.5';
         div.innerHTML = `
-            <div class="w-6 h-6 rounded-md bg-[#f1f1ef] border border-[#e3e2e0] text-[#5a5a58] flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 font-bold">✨</div>
-            <div class="p-3.5 rounded-xl rounded-tl-sm bg-[#fcfbf9] border border-[#e9e9e7] text-[#2f3437] text-xs leading-relaxed max-w-[85%] shadow-2xs">
+            <div class="w-6 h-6 rounded-md bg-[var(--tag-gray-bg)] border border-[var(--tag-gray-border)] text-[var(--tag-gray-text)] flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 font-bold">✨</div>
+            <div class="p-3.5 rounded-xl rounded-tl-sm bg-[var(--chat-ai-bg)] border border-[var(--chat-ai-border)] text-[var(--chat-ai-text)] text-xs leading-relaxed max-w-[85%] shadow-2xs">
                 ${escapeHtml(text)}
             </div>
         `;
@@ -475,12 +548,12 @@ function appendChatThinking() {
     div.id = id;
     div.className = 'flex items-start space-x-2.5';
     div.innerHTML = `
-        <div class="w-6 h-6 rounded-md bg-[#f1f1ef] border border-[#e3e2e0] text-[#5a5a58] flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 font-bold">✨</div>
-        <div class="p-3.5 rounded-xl rounded-tl-sm bg-[#fcfbf9] border border-[#e9e9e7] text-[#787774] text-xs flex items-center space-x-1.5 shadow-2xs">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#6940a5] animate-bounce"></span>
-            <span class="w-1.5 h-1.5 rounded-full bg-[#6940a5] animate-bounce [animation-delay:0.2s]"></span>
-            <span class="w-1.5 h-1.5 rounded-full bg-[#6940a5] animate-bounce [animation-delay:0.4s]"></span>
-            <span class="ml-1 text-[11px] text-[#787774]">Synthesizing adjustments...</span>
+        <div class="w-6 h-6 rounded-md bg-[var(--tag-gray-bg)] border border-[var(--tag-gray-border)] text-[var(--tag-gray-text)] flex items-center justify-center text-[10px] flex-shrink-0 mt-0.5 font-bold">✨</div>
+        <div class="p-3.5 rounded-xl rounded-tl-sm bg-[var(--chat-ai-bg)] border border-[var(--chat-ai-border)] text-[var(--text-secondary)] text-xs flex items-center space-x-1.5 shadow-2xs">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#6940a5] dark:bg-[#b388ff] animate-bounce"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#6940a5] dark:bg-[#b388ff] animate-bounce" style="animation-delay: 0.15s"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#6940a5] dark:bg-[#b388ff] animate-bounce" style="animation-delay: 0.3s"></span>
+            <span class="ml-1 text-[11px] text-[var(--text-muted)] font-mono">Synthesizing adjustments...</span>
         </div>
     `;
     elements.chatHistory.appendChild(div);
@@ -603,6 +676,7 @@ function setupEventListeners() {
                 search_topic: elements.selectSearchTopic.value,
                 search_depth: elements.selectSearchDepth.value,
                 preferences_summary: elements.inputPreferencesSummary.value.trim(),
+                theme: elements.selectTheme ? elements.selectTheme.value : (document.documentElement.classList.contains('dark') ? 'dark' : 'light'),
             };
 
             await updateProfile(updates);
@@ -612,6 +686,16 @@ function setupEventListeners() {
             showToast(`Failed to save settings: ${err.message}`, 'error');
         }
     };
+
+    // Theme Mode Toggle Listeners
+    if (elements.btnThemeToggle) {
+        elements.btnThemeToggle.onclick = toggleTheme;
+    }
+    if (elements.selectTheme) {
+        elements.selectTheme.onchange = (e) => {
+            applyTheme(e.target.value, true, true);
+        };
+    }
 
     // Milestone Event Actions
     elements.btnOpenAddEventModal.onclick = openAddEventModal;

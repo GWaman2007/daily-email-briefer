@@ -84,6 +84,45 @@ class TestAgent(unittest.TestCase):
         mock_record_brief.assert_called_once()
         mock_mark_expired.assert_called_once()
         mock_sender.send_brief.assert_called_once()
+        synth_call_kwargs = mock_synth.synthesize_brief.call_args.kwargs
+        self.assertEqual(synth_call_kwargs["profile"]["theme"], "light")
+
+    @patch("src.daily_briefer.agent.EmailSender")
+    @patch("src.daily_briefer.agent.mark_expired_events")
+    @patch("src.daily_briefer.agent.record_brief")
+    @patch("src.daily_briefer.agent.GeminiSynthesizer")
+    @patch("src.daily_briefer.agent.NewsFetcher")
+    @patch("src.daily_briefer.agent.load_active_events")
+    @patch("src.daily_briefer.agent.load_profile")
+    @patch("src.daily_briefer.agent.get_client")
+    def test_run_pipeline_dark_theme(
+        self,
+        mock_get_client,
+        mock_load_profile,
+        mock_load_events,
+        mock_news_cls,
+        mock_gemini_cls,
+        mock_record_brief,
+        mock_mark_expired,
+        mock_email_cls,
+    ):
+        mock_load_profile.return_value = {
+            "id": 1,
+            "recipient_email": "user@example.com",
+            "is_active": True,
+            "theme": "dark",
+        }
+        mock_load_events.return_value = []
+        mock_synth = MagicMock()
+        mock_synth.formulate_queries.return_value = ["tech news"]
+        mock_synth.synthesize_brief.return_value = {"subject": "S", "html": "<p>H</p>"}
+        mock_gemini_cls.return_value = mock_synth
+        mock_news_cls.return_value.search_news.return_value = []
+
+        exit_code = run_pipeline(config_override=self.dummy_config)
+        self.assertEqual(exit_code, 0)
+        synth_call_kwargs = mock_synth.synthesize_brief.call_args.kwargs
+        self.assertEqual(synth_call_kwargs["profile"]["theme"], "dark")
 
 
 if __name__ == "__main__":

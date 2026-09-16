@@ -54,11 +54,25 @@ export async function updateProfile(updates) {
         updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await client
+    let { data, error } = await client
         .from('profile')
         .update(payload)
         .eq('id', 1)
         .select();
+
+    // Gracefully handle if user hasn't run the migration to add the 'theme' column yet
+    if (error && error.message && error.message.toLowerCase().includes('theme') && 'theme' in payload) {
+        console.warn('Supabase "profile" table does not have "theme" column yet. Retrying update without "theme". Please run schema.sql.');
+        const fallbackPayload = { ...payload };
+        delete fallbackPayload.theme;
+        const res = await client
+            .from('profile')
+            .update(fallbackPayload)
+            .eq('id', 1)
+            .select();
+        if (res.error) throw res.error;
+        return res.data && res.data.length > 0 ? res.data[0] : null;
+    }
 
     if (error) throw error;
     return data && data.length > 0 ? data[0] : null;

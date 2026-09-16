@@ -37,6 +37,7 @@ class Config:
     search_topic: str = "news"
     search_depth: str = "basic"
     max_search_queries: int = 4
+    theme: str = "light"
 
     @classmethod
     def from_env(cls) -> Config:
@@ -65,6 +66,8 @@ class Config:
         search_depth = os.getenv("SEARCH_DEPTH", "basic").strip()
         max_queries_raw = os.getenv("MAX_SEARCH_QUERIES", "4").strip()
         max_search_queries = int(max_queries_raw) if max_queries_raw.isdigit() else 4
+        theme_raw = os.getenv("EMAIL_THEME", "").strip() or os.getenv("THEME", "").strip() or "light"
+        theme = theme_raw.lower() if theme_raw.lower() in ("light", "dark") else "light"
 
         # Validation
         missing = []
@@ -99,4 +102,5 @@ class Config:
             search_topic=search_topic,
             search_depth=search_depth,
             max_search_queries=max_search_queries,
+            theme=theme,
         )
