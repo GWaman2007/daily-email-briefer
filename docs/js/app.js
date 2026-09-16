@@ -85,6 +85,7 @@ const elements = {
     // Briefs Archive
     briefsListContainer: document.getElementById('briefsListContainer'),
     btnRefreshBriefs: document.getElementById('btnRefreshBriefs'),
+    btnPreviewDraft: document.getElementById('btnPreviewDraft'),
 
     // Modals
     modalUnlockVault: document.getElementById('modalUnlockVault'),
@@ -154,8 +155,7 @@ function showToast(message, type = 'info') {
  */
 function initTheme() {
     const savedTheme = localStorage.getItem('dailybriefer_theme');
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    const initialTheme = savedTheme === 'dark' ? 'dark' : 'light';
     applyTheme(initialTheme, false, false);
 
     // Listen for system theme changes if no explicit user override is stored
@@ -412,6 +412,121 @@ async function loadBriefsData() {
         console.error('Error loading briefs:', err);
         elements.briefsListContainer.innerHTML = `<div class="text-[#c4554d] text-center py-6">Failed to load briefs: ${err.message}</div>`;
     }
+}
+
+/**
+ * Generate and display a sample executive briefing draft in the requested/current theme.
+ */
+function openSampleDraftModal() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const today = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+
+    const subject = `DailyBriefer · Executive Intelligence Brief (${today})`;
+
+    // Palette tokens tailored for the email draft
+    const outerBg = isDark ? '#191919' : '#fcfbf9';
+    const cardBg = isDark ? '#202020' : '#ffffff';
+    const cardBorder = isDark ? '#2e2e2e' : '#e9e9e7';
+    const storyBg = isDark ? '#262626' : '#f7f6f5';
+    const storyBorder = isDark ? '#333333' : '#e9e9e7';
+    const textPrimary = isDark ? '#ebebeb' : '#2f3437';
+    const textBody = isDark ? '#d4d4d4' : '#37352f';
+    const textMuted = isDark ? '#9b9a97' : '#787774';
+    const coralAccent = isDark ? '#eb5757' : '#e16259';
+    const badgeBg = isDark ? '#2f2f2f' : '#2f3437';
+    const badgeText = isDark ? '#ebebeb' : '#ffffff';
+    const milestoneBorder = isDark ? '#b388ff' : '#6940a5';
+
+    const draftHtml = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${subject}</title>
+</head>
+<body style="margin:0; padding:28px 16px; background-color:${outerBg}; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased;">
+    <div style="max-width:640px; margin:0 auto; background-color:${cardBg}; padding:32px 28px; border-radius:12px; border:1px solid ${cardBorder}; box-shadow:0 1px 3px rgba(0,0,0,0.04); color:${textPrimary};">
+        <!-- Header -->
+        <div style="border-bottom:1px solid ${cardBorder}; padding-bottom:20px; margin-bottom:24px;">
+            <div style="display:inline-block; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:700; background-color:${badgeBg}; color:${badgeText}; letter-spacing:1px; text-transform:uppercase;">
+                DailyBriefer · Executive Digest
+            </div>
+            <h1 style="margin:12px 0 4px 0; font-size:22px; font-weight:700; color:${textPrimary}; line-height:1.3;">
+                Daily Intelligence Brief
+            </h1>
+            <p style="margin:0; font-size:13px; color:${textMuted}; font-family:monospace;">
+                ${today} · Prepared for ${currentProfile?.recipient_email || 'subscriber@example.com'}
+            </p>
+            <p style="margin:12px 0 0 0; font-size:14px; color:${textBody}; line-height:1.5; font-style:italic;">
+                "Key breakthroughs across AI reasoning systems, distributed cloud architecture, and semiconductor technology."
+            </p>
+        </div>
+
+        <!-- Section: AI & Machine Intelligence -->
+        <div style="margin-bottom:24px;">
+            <div style="font-size:11px; font-weight:700; color:${coralAccent}; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:12px;">
+                ◆ AI & Autonomous Systems
+            </div>
+
+            <!-- Story 1 -->
+            <div style="margin-bottom:16px; padding:18px; background-color:${storyBg}; border-radius:8px; border:1px solid ${storyBorder}; border-left:4px solid ${coralAccent};">
+                <h3 style="margin:0 0 8px 0; font-size:16px; font-weight:600; color:${textPrimary}; line-height:1.4;">
+                    Next-Gen Latent Reasoning Models Show Sublinear Compute Scaling
+                </h3>
+                <p style="margin:0 0 10px 0; font-size:14px; color:${textBody}; line-height:1.6;">
+                    Recent benchmarks demonstrate frontier models reducing inferencing overhead by 40% while preserving test-time reflection depth. Engineering teams are leveraging test-time compute scaling for code synthesis and formal verification.
+                </p>
+                <a href="https://example.com/ai-reasoning" style="color:${coralAccent}; text-decoration:none; font-size:13px; font-weight:600;">
+                    Read Analysis & Benchmarks →
+                </a>
+            </div>
+
+            <!-- Story 2 -->
+            <div style="margin-bottom:16px; padding:18px; background-color:${storyBg}; border-radius:8px; border:1px solid ${storyBorder}; border-left:4px solid ${coralAccent};">
+                <h3 style="margin:0 0 8px 0; font-size:16px; font-weight:600; color:${textPrimary}; line-height:1.4;">
+                    Open-Weights Ecosystem Converges on Standard Agent Protocol
+                </h3>
+                <p style="margin:0 0 10px 0; font-size:14px; color:${textBody}; line-height:1.6;">
+                    A coalition of research labs released an interoperable standard for multi-agent tool execution and memory isolation, simplifying zero-trust deployments across edge environments.
+                </p>
+                <a href="https://example.com/agent-protocol" style="color:${coralAccent}; text-decoration:none; font-size:13px; font-weight:600;">
+                    Explore Specification →
+                </a>
+            </div>
+        </div>
+
+        <!-- Section: Upcoming Milestones -->
+        <div style="margin-top:28px; padding:18px; background-color:${storyBg}; border-radius:8px; border:1px solid ${storyBorder}; border-left:4px solid ${milestoneBorder};">
+            <h3 style="margin:0 0 10px 0; font-size:15px; font-weight:600; color:${textPrimary};">
+                📅 Active Milestones & Countdown Reminders
+            </h3>
+            <ul style="margin:0; padding-left:20px; font-size:13px; color:${textBody}; line-height:1.7;">
+                <li><strong>Quarterly Tech Review</strong> — Oct 15, 2026 (in 29 days)</li>
+                <li><strong>Cloud Infrastructure Migration</strong> — Nov 01, 2026 (in 46 days)</li>
+            </ul>
+        </div>
+
+        <!-- Footer -->
+        <div style="margin-top:32px; padding-top:18px; border-top:1px solid ${cardBorder}; text-align:center; font-size:12px; color:${textMuted}; line-height:1.6;">
+            DailyBriefer v2 · Serverless AI News Intelligence<br>
+            <span style="font-size:11px;">You are receiving this draft formatted in <strong>Notion Light Aesthetic</strong>. Preferences and theme can be adjusted anytime on your dashboard.</span>
+        </div>
+    </div>
+</body>
+</html>`;
+
+    elements.inspectBriefSubject.textContent = subject;
+    elements.inspectBriefDate.textContent = `${today} (Live Draft Preview)`;
+    elements.briefIframe.srcdoc = draftHtml;
+    elements.briefRawCode.textContent = draftHtml;
+    currentBriefDetail = { subject, html_content: draftHtml };
+    switchBriefTab('rendered');
+    elements.modalInspectBrief.classList.remove('hidden');
 }
 
 /**
@@ -768,6 +883,9 @@ function setupEventListeners() {
 
     // Historical Briefs Actions
     elements.btnRefreshBriefs.onclick = loadBriefsData;
+    if (elements.btnPreviewDraft) {
+        elements.btnPreviewDraft.onclick = openSampleDraftModal;
+    }
     elements.briefsListContainer.onclick = (e) => {
         const item = e.target.closest('[data-brief-id]');
         if (item) {

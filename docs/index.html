@@ -16,8 +16,7 @@
         (function () {
             try {
                 const storedTheme = localStorage.getItem('dailybriefer_theme');
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                if (storedTheme === 'dark') {
                     document.documentElement.classList.add('dark');
                     document.documentElement.setAttribute('data-theme', 'dark');
                 } else {
@@ -63,7 +62,7 @@
                         }
                     },
                     fontFamily: {
-                        sans: ['Inter', -apple - system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'sans-serif'],
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     }
                 }
@@ -133,8 +132,8 @@
                 </button>
 
                 <!-- Theme Toggle Button (Light / Dark) -->
-                <button id="btnThemeToggle" type="button" title="Toggle Light / Dark Mode" aria-label="Toggle Theme"
-                    class="theme-toggle-btn p-2 rounded-md bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition flex items-center justify-center">
+                <button id="btnThemeToggle" type="button" title="Toggle Theme (Light / Dark)" aria-label="Toggle Theme"
+                    class="theme-toggle-btn w-8 h-8 rounded-md bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition flex items-center justify-center shadow-2xs">
                     <!-- Sun icon (shown in dark mode to switch to light) -->
                     <svg id="themeIconSun" class="w-4 h-4 text-[#e89547] hidden" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
@@ -151,7 +150,7 @@
 
                 <!-- Vault Settings Modal Trigger -->
                 <button id="btnOpenVaultSettings" title="Vault Settings"
-                    class="p-2 rounded-md bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition">
+                    class="w-8 h-8 rounded-md bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition flex items-center justify-center shadow-2xs">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -202,11 +201,9 @@
                         <p id="statActiveState" class="text-sm font-semibold text-[#286638] dark:text-[#6bc97b] mt-1">
                             Active & Running</p>
                     </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="toggleActiveStatus" class="sr-only peer" checked>
-                        <div
-                            class="w-10 h-5 bg-[var(--border-subtle)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-strong)] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#286638] dark:peer-checked:bg-[#4d935f]">
-                        </div>
+                    <label class="notion-switch" title="Toggle Briefing Pipeline (Active / Paused)">
+                        <input type="checkbox" id="toggleActiveStatus" checked>
+                        <span class="notion-switch-slider"></span>
                     </label>
                 </div>
 
@@ -477,14 +474,27 @@
                                     </p>
                                 </div>
                             </div>
-                            <button id="btnRefreshBriefs"
-                                class="p-1.5 rounded-md hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
-                                title="Refresh Briefs">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                </svg>
-                            </button>
+                            <div class="flex items-center space-x-2">
+                                <button id="btnPreviewDraft"
+                                    class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-[var(--btn-secondary-bg)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] border border-[var(--border-subtle)] transition shadow-2xs"
+                                    title="Preview Email Sending Draft">
+                                    <svg class="w-3.5 h-3.5 mr-1 text-[#e16259]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    <span>Preview Draft</span>
+                                </button>
+                                <button id="btnRefreshBriefs"
+                                    class="p-1.5 rounded-md hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition"
+                                    title="Refresh Briefs">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Briefs Archive List -->
@@ -687,10 +697,7 @@
     </div>
 
     <!-- Application Script Entrypoint -->
-    <script type="module" src="js/app.js?v=2.1.0"></script>
-</body>
-
-</html>></script>
+    <script type="module" src="js/app.js?v=2.2.0"></script>
 </body>
 
 </html>
