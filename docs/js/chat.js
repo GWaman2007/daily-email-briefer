@@ -21,7 +21,7 @@ async function callGeminiRest(geminiApiKey, prompt, preferredModel = 'gemini-3.5
 
     for (const model of modelsToTry) {
         const cleanModel = model.replace('models/', '');
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${encodeURIComponent(geminiApiKey)}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent`;
 
         const payload = {
             contents: [
@@ -42,6 +42,7 @@ async function callGeminiRest(geminiApiKey, prompt, preferredModel = 'gemini-3.5
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-goog-api-key': geminiApiKey,
                 },
                 body: JSON.stringify(payload),
             });

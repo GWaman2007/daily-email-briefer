@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
-REPO = "GWaman2007/daily-email-briefer"
+DEFAULT_REPO = "GWaman2007/daily-email-briefer"
 ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 
 SECRETS_TO_SYNC = [
@@ -23,6 +23,28 @@ SECRETS_TO_SYNC = [
     "SMTP_PASSWORD",
 ]
 
+
+def get_current_repo() -> str:
+    """Detect GitHub owner/repo from git remote origin with graceful fallback."""
+    env_repo = os.getenv("GITHUB_REPOSITORY", "").strip()
+    if env_repo:
+        return env_repo
+    try:
+        res = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            capture_output=True,
+            text=True,
+        )
+        if res.returncode == 0 and res.stdout.strip():
+            url = res.stdout.strip()
+            if "github.com" in url:
+                part = url.split("github.com")[-1].lstrip("/:").removesuffix(".git")
+                if "/" in part:
+                    return part
+    except Exception:
+        pass
+    return DEFAULT_REPO
+
 def main():
     if not ENV_PATH.exists():
         print(f"❌ .env file not found at {ENV_PATH}")
@@ -31,7 +53,8 @@ def main():
         sys.exit(1)
 
     load_dotenv(ENV_PATH)
-    print(f"🔄 Syncing secrets from .env to GitHub repository ({REPO})...\n")
+    repo = get_current_repo()
+    print(f"🔄 Syncing secrets from .env to GitHub repository ({repo})...\n")
 
     synced = 0
     for secret in SECRETS_TO_SYNC:
@@ -40,7 +63,7 @@ def main():
             continue
 
         # Run gh secret set
-        cmd = ["gh", "secret", "set", secret, "--repo", REPO, "--body", val]
+        cmd = ["gh", "secret", "set", secret, "--repo", repo, "--body", val]
         res = subprocess.run(cmd, capture_output=True, text=True)
         if res.returncode == 0:
             print(f"  ✓ Set GitHub Secret: {secret}")

@@ -738,8 +738,8 @@ function setupEventListeners() {
             showToast('Please fill in Supabase URL, Anon Key, and Gemini API Key.', 'warning');
             return;
         }
-        if (!passphrase || passphrase.length < 4) {
-            showToast('Master passphrase must be at least 4 characters long.', 'warning');
+        if (!passphrase || passphrase.length < 8) {
+            showToast('Master passphrase must be at least 8 characters long.', 'warning');
             return;
         }
 

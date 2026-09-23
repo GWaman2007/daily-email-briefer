@@ -31,6 +31,18 @@ class TestAgent(unittest.TestCase):
         exit_code = run_pipeline(config_override=self.dummy_config)
         self.assertEqual(exit_code, 0)
 
+    @patch("src.daily_briefer.agent.load_profile")
+    @patch("src.daily_briefer.agent.get_client")
+    def test_run_pipeline_invalid_recipient_email_exits_1(self, mock_client, mock_load_profile):
+        mock_load_profile.return_value = {
+            "id": 1,
+            "recipient_email": "invalid-email-address",
+            "is_active": True,
+        }
+
+        exit_code = run_pipeline(config_override=self.dummy_config)
+        self.assertEqual(exit_code, 1)
+
     @patch("src.daily_briefer.agent.EmailSender")
     @patch("src.daily_briefer.agent.mark_expired_events")
     @patch("src.daily_briefer.agent.record_brief")

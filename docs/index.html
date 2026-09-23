@@ -589,9 +589,9 @@
                         class="w-full px-3 py-2 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] font-mono text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)]">
                 </div>
                 <div class="border-t border-[var(--border-subtle)] pt-3">
-                    <label class="block text-[var(--text-primary)] font-semibold mb-1">Set Master Passphrase</label>
-                    <input type="password" id="cfgMasterPassphrase" required
-                        placeholder="Master passphrase to encrypt your keys"
+                    <label class="block text-[var(--text-primary)] font-semibold mb-1">Set Master Passphrase <span class="text-[11px] text-[var(--text-muted)] font-normal">(Min. 8 characters)</span></label>
+                    <input type="password" id="cfgMasterPassphrase" required minlength="8"
+                        placeholder="Master passphrase (at least 8 characters)"
                         class="w-full px-3 py-2 rounded-md bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--input-text)] focus:border-[var(--input-focus-border)] focus:ring-1 focus:ring-[var(--input-focus-border)]">
                 </div>
 
@@ -693,6 +693,7 @@
             <!-- Content Area: Fills 100% of remaining vertical height -->
             <div class="flex-1 w-full min-h-0 overflow-hidden relative rounded-lg border border-[var(--border-subtle)] bg-[var(--email-preview-bg)] mt-3">
                 <iframe id="briefIframe"
+                    sandbox="allow-popups allow-popups-to-escape-sandbox"
                     class="email-preview-frame w-full h-full border-0 block"></iframe>
                 <pre id="briefRawCode"
                     class="hidden w-full h-full p-4 bg-[var(--bg-canvas)] text-[var(--text-primary)] font-mono text-xs overflow-auto select-all"></pre>

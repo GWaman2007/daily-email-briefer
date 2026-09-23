@@ -64,15 +64,15 @@ def record_brief(client: Client, subject: str, html_content: str) -> Dict[str, A
         raise
 
 
-def mark_expired_events(client: Client) -> int:
+def mark_expired_events(client: Client, today_str: Optional[str] = None) -> int:
     """Transition events where event_date < CURRENT_DATE to status='expired'."""
     try:
-        today_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+        effective_today = today_str or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
         response = (
             client.table("events")
             .update({"status": "expired"})
             .eq("status", "active")
-            .lt("event_date", today_str)
+            .lt("event_date", effective_today)
             .execute()
         )
         expired_count = len(response.data) if response.data else 0
@@ -81,4 +81,34 @@ def mark_expired_events(client: Client) -> int:
         return expired_count
     except Exception as e:
         logger.warning(f"Error marking expired events: {e}")
+        return 0
+
+
+def cleanup_old_briefs(client: Client, keep_last_n: int = 90) -> int:
+    """Prune historical briefs beyond keep_last_n to prevent unbounded table growth."""
+    try:
+        response = (
+            client.table("briefs")
+            .select("id, created_at")
+            .order("created_at", desc=True)
+            .execute()
+        )
+        data = getattr(response, "data", None)
+        records = data if isinstance(data, list) else []
+        if len(records) <= keep_last_n:
+            return 0
+
+        stale_records = records[keep_last_n:]
+        stale_ids = [r["id"] for r in stale_records if "id" in r]
+        deleted_count = 0
+
+        for i in range(0, len(stale_ids), 50):
+            chunk = stale_ids[i : i + 50]
+            del_resp = client.table("briefs").delete().in_("id", chunk).execute()
+            deleted_count += len(del_resp.data) if del_resp.data else len(chunk)
+
+        logger.info(f"Pruned {deleted_count} stale brief(s) (kept latest {keep_last_n}).")
+        return deleted_count
+    except Exception as e:
+        logger.warning(f"Failed to cleanup old briefs: {e}")
         return 0

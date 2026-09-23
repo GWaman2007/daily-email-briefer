@@ -3,11 +3,37 @@
 import unittest
 from unittest.mock import patch
 
-from src.daily_briefer.gemini import GeminiSynthesizer
+from src.daily_briefer.gemini import GeminiSynthesizer, sanitize_html_content
 from src.daily_briefer.news import Article
 
 
 class TestGemini(unittest.TestCase):
+    def test_sanitize_html_content(self):
+        raw_xss = '<p>Safe</p><script>alert("xss")</script><iframe src="evil.html"></iframe><a href="javascript:alert(1)" onclick="steal()">Click</a>'
+        cleaned = sanitize_html_content(raw_xss)
+        self.assertNotIn("<script", cleaned)
+        self.assertNotIn("<iframe", cleaned)
+        self.assertNotIn("onclick", cleaned)
+        self.assertNotIn("javascript:", cleaned)
+        self.assertIn("<p>Safe</p>", cleaned)
+
+    def test_fallback_html_escapes_xss(self):
+        synthesizer = GeminiSynthesizer(api_key="test-key")
+        malicious_articles = [
+            Article(
+                title='<script>alert("hack")</script>',
+                url='https://example.com/" onmouseover="alert(1)',
+                content='<img src=x onerror=alert(1)>',
+            )
+        ]
+        malicious_events = [
+            {"title": '<b onfocus=alert(1)>Milestone</b>', "event_date": "2026-10-01"}
+        ]
+        html_out = synthesizer._create_fallback_html("Aug 18, 2026", malicious_articles, malicious_events)
+        self.assertNotIn('<script>alert("hack")</script>', html_out)
+        self.assertIn('&lt;script&gt;alert(&quot;hack&quot;)&lt;/script&gt;', html_out)
+        self.assertNotIn('<img src=x onerror=alert(1)>', html_out)
+        self.assertIn('&lt;img src=x onerror=alert(1)&gt;', html_out)
     @patch.object(GeminiSynthesizer, "_call_with_retry_and_fallback")
     def test_formulate_queries_parses_json(self, mock_call):
         mock_call.return_value = '["AI breakthroughs 2026", "Quantum computing chips", "Global clean energy transition"]'

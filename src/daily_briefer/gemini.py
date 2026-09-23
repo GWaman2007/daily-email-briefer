@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import datetime
+import html
 import json
 import logging
 import re
 import time
 from typing import Any, Dict, List, Optional
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    ZoneInfo = None  # type: ignore
+
 try:
     import requests
 except ImportError:
@@ -21,6 +27,21 @@ logger = logging.getLogger(__name__)
 DEFAULT_PRIMARY_MODEL = "gemini-3.5-flash-lite"
 DEFAULT_FALLBACK_MODEL = "gemini-3.1-flash-lite"
 SECONDARY_FALLBACK_MODEL = "gemini-2.5-flash-lite"
+
+
+def sanitize_html_content(raw_html: str) -> str:
+    """Strip dangerous executable tags and attributes from generated HTML."""
+    if not raw_html:
+        return ""
+    # Strip script tags and their contents
+    cleaned = re.sub(r"<script.*?>.*?</script>", "", raw_html, flags=re.DOTALL | re.IGNORECASE)
+    # Strip iframe tags
+    cleaned = re.sub(r"<iframe.*?>.*?</iframe>", "", cleaned, flags=re.DOTALL | re.IGNORECASE)
+    # Strip inline event handlers (e.g. onload, onerror, onclick)
+    cleaned = re.sub(r"\bon[a-z]+\s*=\s*(?:'[^']*'|\"[^\"]*\"|[^\s>]+)", "", cleaned, flags=re.IGNORECASE)
+    # Strip javascript: pseudo-protocols
+    cleaned = re.sub(r"href\s*=\s*['\"]javascript:[^'\"]*['\"]", 'href="#"', cleaned, flags=re.IGNORECASE)
+    return cleaned
 
 
 class GeminiSynthesizer:
@@ -47,6 +68,11 @@ class GeminiSynthesizer:
 
     def _call_gemini_rest(self, model: str, prompt: str, json_mode: bool = True) -> str:
         """Direct REST call to Gemini API with robust response extraction."""
+        if requests is None:
+            raise ImportError(
+                "The 'requests' package is required for direct REST calls to the Gemini API. "
+                "Please install it via `pip install requests`."
+            )
         clean_model = model.replace("models/", "")
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{clean_model}:generateContent"
         headers = {
@@ -201,8 +227,17 @@ Example Output:
         Synthesize news articles and active event milestones into a structured HTML email brief.
         Returns a dict with 'subject' and 'html', formatted to match the user's web theme (light or dark).
         """
-        today_str = datetime.datetime.now(datetime.timezone.utc).strftime("%A, %B %d, %Y")
-        today_iso = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
+        tz_name = profile.get("timezone", "UTC") if profile else "UTC"
+        user_tz = datetime.timezone.utc
+        if ZoneInfo and tz_name:
+            try:
+                user_tz = ZoneInfo(tz_name)
+            except Exception:
+                user_tz = datetime.timezone.utc
+
+        now_tz = datetime.datetime.now(user_tz)
+        today_str = now_tz.strftime("%A, %B %d, %Y")
+        today_iso = now_tz.strftime("%Y-%m-%d")
 
         persona_tone = profile.get("persona_tone", "Analytical & Direct")
         preferences_summary = profile.get("preferences_summary", "Focus on software engineering, AI, and global news.")
@@ -322,7 +357,7 @@ Deliver the output as a STRICT JSON object with two fields:
             data = json.loads(cleaned)
 
             subject = data.get("subject", "").strip() or f"Daily Intelligence Brief · {today_str}"
-            html_content = data.get("html", "").strip()
+            html_content = sanitize_html_content(data.get("html", "").strip())
 
             if html_content:
                 return {
@@ -366,17 +401,23 @@ Deliver the output as a STRICT JSON object with two fields:
 
         articles_html = ""
         for art in articles[:10]:
+            safe_title = html.escape(art.title or "")
+            safe_content = html.escape(art.content or "")
+            safe_url = html.escape(art.url or "", quote=True)
             articles_html += f"""
             <div style="margin-bottom: 18px; padding: 16px; background-color: {story_bg}; border-radius: 8px; border: 1px solid {story_border}; border-left: 4px solid {accent_color};">
-                <h3 style="margin: 0 0 8px 0; color: {text_primary}; font-size: 16px; font-weight: 600;">{art.title}</h3>
-                <p style="margin: 0 0 10px 0; color: {text_body}; font-size: 14px; line-height: 1.5;">{art.content}</p>
-                <a href="{art.url}" style="color: {accent_color}; text-decoration: none; font-size: 13px; font-weight: bold;">Read Source →</a>
+                <h3 style="margin: 0 0 8px 0; color: {text_primary}; font-size: 16px; font-weight: 600;">{safe_title}</h3>
+                <p style="margin: 0 0 10px 0; color: {text_body}; font-size: 14px; line-height: 1.5;">{safe_content}</p>
+                <a href="{safe_url}" style="color: {accent_color}; text-decoration: none; font-size: 13px; font-weight: bold;">Read Source →</a>
             </div>
             """
 
         events_html = ""
         if events:
-            events_items = "".join([f"<li style='margin-bottom: 6px; color: {text_body};'><strong>{e.get('title')}</strong> — {e.get('event_date')}</li>" for e in events])
+            events_items = "".join([
+                f"<li style='margin-bottom: 6px; color: {text_body};'><strong>{html.escape(str(e.get('title', '')))}</strong> — {html.escape(str(e.get('event_date', '')))}</li>"
+                for e in events
+            ])
             events_html = f"""
             <div style="margin-top: 26px; padding: 16px; background-color: {story_bg}; border-radius: 8px; border: 1px solid {story_border}; border-left: 4px solid {callout_border};">
                 <h3 style="margin: 0 0 10px 0; color: {text_primary}; font-size: 15px; font-weight: 600;">Upcoming Milestones</h3>

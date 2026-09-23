@@ -45,3 +45,14 @@ jobs:
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
         run: |
           python -m src.daily_briefer.agent
+
+      - name: Pipeline Execution Summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "### ✅ Daily Intelligence Briefing Succeeded" >> $GITHUB_STEP_SUMMARY
+            echo "The intelligence briefing was synthesized and dispatched." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Daily Intelligence Briefing Failed" >> $GITHUB_STEP_SUMMARY
+            echo "The pipeline encountered a fatal error during execution. Please check the step logs above." >> $GITHUB_STEP_SUMMARY
+          fi

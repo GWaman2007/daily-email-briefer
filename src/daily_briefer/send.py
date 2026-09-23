@@ -11,6 +11,19 @@ import re
 logger = logging.getLogger(__name__)
 
 
+EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
+
+
+def validate_email(email: str) -> str:
+    """Validate recipient email format."""
+    clean = (email or "").strip()
+    if not clean:
+        raise ValueError("Recipient email is empty. Cannot send email.")
+    if not EMAIL_REGEX.match(clean):
+        raise ValueError(f"Invalid recipient email format: '{clean}'.")
+    return clean
+
+
 def strip_html_tags(html_text: str) -> str:
     """Create clean plain-text representation from HTML string."""
     clean = re.sub(r"<style.*?>.*?</style>", "", html_text, flags=re.DOTALL | re.IGNORECASE)
@@ -48,8 +61,7 @@ class EmailSender:
         """
         Send a multipart HTML email to the recipient.
         """
-        if not recipient_email:
-            raise ValueError("Recipient email is empty. Cannot send email.")
+        recipient_email = validate_email(recipient_email)
 
         if not plain_text:
             plain_text = strip_html_tags(html_content)

@@ -2,15 +2,27 @@
 
 from __future__ import annotations
 
+import datetime
 import logging
 import sys
 from typing import Optional
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    ZoneInfo = None  # type: ignore
 
 from .config import Config
-from .db import get_client, load_profile, load_active_events, record_brief, mark_expired_events
+from .db import (
+    get_client,
+    load_profile,
+    load_active_events,
+    record_brief,
+    mark_expired_events,
+    cleanup_old_briefs,
+)
 from .gemini import GeminiSynthesizer
 from .news import NewsFetcher
-from .send import EmailSender
+from .send import EmailSender, validate_email
 
 # Configure structured console logging
 logging.basicConfig(
@@ -48,10 +60,25 @@ def run_pipeline(config_override: Optional[Config] = None) -> int:
             return 0
 
         # Resolve dynamic settings (DB overrides env defaults)
-        recipient_email = profile.get("recipient_email", "").strip() or config.recipient_email
-        if not recipient_email:
+        raw_recipient = profile.get("recipient_email", "").strip() or config.recipient_email
+        if not raw_recipient:
             logger.error("No recipient email configured in database profile or environment.")
             return 1
+
+        try:
+            recipient_email = validate_email(raw_recipient)
+        except ValueError as val_err:
+            logger.error(f"Recipient email validation failed: {val_err}")
+            return 1
+
+        tz_name = profile.get("timezone", "UTC")
+        user_tz = datetime.timezone.utc
+        if ZoneInfo and tz_name:
+            try:
+                user_tz = ZoneInfo(tz_name)
+            except Exception:
+                user_tz = datetime.timezone.utc
+        today_str = datetime.datetime.now(user_tz).strftime("%Y-%m-%d")
 
         primary_model = profile.get("primary_model", "").strip() or config.primary_model
         fallback_model = profile.get("fallback_model", "").strip() or config.fallback_model
@@ -108,10 +135,11 @@ def run_pipeline(config_override: Optional[Config] = None) -> int:
         subject = brief_data.get("subject", "Daily Intelligence Brief")
         html_content = brief_data.get("html", "")
 
-        # 7. Persist brief to database and mark expired events
+        # 7. Persist brief to database, mark expired events, and prune old briefs
         logger.info("Archiving synthesized brief to Supabase...")
         record_brief(supabase, subject=subject, html_content=html_content)
-        mark_expired_events(supabase)
+        mark_expired_events(supabase, today_str=today_str)
+        cleanup_old_briefs(supabase, keep_last_n=90)
 
         # 8. Transmit email via SMTP relay
         logger.info("Transmitting email digest via SMTP...")

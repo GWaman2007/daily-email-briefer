@@ -3,7 +3,13 @@
 import unittest
 from unittest.mock import MagicMock
 
-from src.daily_briefer.db import load_profile, load_active_events, record_brief, mark_expired_events
+from src.daily_briefer.db import (
+    load_profile,
+    load_active_events,
+    record_brief,
+    mark_expired_events,
+    cleanup_old_briefs,
+)
 
 
 class TestDB(unittest.TestCase):
@@ -42,8 +48,27 @@ class TestDB(unittest.TestCase):
             {"id": "past-event-1"}
         ]
 
-        count = mark_expired_events(mock_client)
+        count = mark_expired_events(mock_client, today_str="2026-09-24")
         self.assertEqual(count, 1)
+        mock_client.table().update().eq().lt.assert_called_with("event_date", "2026-09-24")
+
+    def test_cleanup_old_briefs_under_limit(self):
+        mock_client = MagicMock()
+        mock_client.table().select().order().execute.return_value.data = [
+            {"id": f"b-{i}", "created_at": "2026-01-01"} for i in range(10)
+        ]
+        pruned = cleanup_old_briefs(mock_client, keep_last_n=20)
+        self.assertEqual(pruned, 0)
+
+    def test_cleanup_old_briefs_over_limit(self):
+        mock_client = MagicMock()
+        mock_client.table().select().order().execute.return_value.data = [
+            {"id": f"b-{i}", "created_at": "2026-01-01"} for i in range(25)
+        ]
+        mock_client.table().delete().in_().execute.return_value.data = [{"id": "deleted"}] * 5
+
+        pruned = cleanup_old_briefs(mock_client, keep_last_n=20)
+        self.assertEqual(pruned, 5)
 
 
 if __name__ == "__main__":

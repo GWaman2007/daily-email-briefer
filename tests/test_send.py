@@ -3,10 +3,24 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from src.daily_briefer.send import EmailSender, strip_html_tags
+from src.daily_briefer.send import EmailSender, strip_html_tags, validate_email
 
 
 class TestSend(unittest.TestCase):
+    def test_validate_email_valid(self):
+        self.assertEqual(validate_email("test@example.com"), "test@example.com")
+        self.assertEqual(validate_email(" user.name+tag@sub.domain.co "), "user.name+tag@sub.domain.co")
+
+    def test_validate_email_invalid(self):
+        with self.assertRaises(ValueError):
+            validate_email("")
+        with self.assertRaises(ValueError):
+            validate_email("not-an-email")
+        with self.assertRaises(ValueError):
+            validate_email("user@domain")
+        with self.assertRaises(ValueError):
+            validate_email("@missing-user.com")
+
     def test_strip_html_tags(self):
         raw_html = "<html><head><style>body{color:red;}</style></head><body><h1>Hello</h1><p>This is a <b>test</b>.</p></body></html>"
         plain = strip_html_tags(raw_html)

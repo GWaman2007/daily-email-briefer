@@ -64,8 +64,8 @@ async function deriveKey(passphrase, salt) {
  * @param {Object} payloadObj { supabaseUrl, supabaseAnonKey, geminiApiKey, githubPat, githubRepo }
  */
 export async function encryptVault(passphrase, payloadObj) {
-    if (!passphrase || passphrase.length < 4) {
-        throw new Error('Passphrase must be at least 4 characters long.');
+    if (!passphrase || passphrase.length < 8) {
+        throw new Error('Passphrase must be at least 8 characters long.');
     }
 
     const salt = window.crypto.getRandomValues(new Uint8Array(SALT_BYTES));

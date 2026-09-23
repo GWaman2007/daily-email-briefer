@@ -93,7 +93,7 @@ DailyBrieferv2/
 ### 1. Database Setup (Supabase)
 1. Create a free project at [supabase.com](https://supabase.com).
 2. Go to the **SQL Editor** in your Supabase dashboard.
-3. Paste and run the contents of [`db/schema.sql`](file:///home/nicepotato/Projects/DailyBrieferv2/db/schema.sql).
+3. Paste and run the contents of [`db/schema.sql`](db/schema.sql).
 4. Copy your **Project URL** and **Anon Public Key** (from *Settings -> API*).
 
 ### 2. GitHub Repository Secrets Setup
