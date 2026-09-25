@@ -73,7 +73,7 @@ class Config:
         if not supabase_url:
             missing.append("SUPABASE_URL")
         if not supabase_key:
-            missing.append("SUPABASE_KEY / SUPABASE_SERVICE_ROLE_KEY")
+            missing.append("SUPABASE_KEY (Publishable Key)")
         if not gemini_api_key:
             missing.append("GEMINI_API_KEY")
         if not tavily_api_key:

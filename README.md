@@ -94,7 +94,7 @@ DailyBrieferv2/
 1. Create a free project at [supabase.com](https://supabase.com).
 2. Go to the **SQL Editor** in your Supabase dashboard.
 3. Paste and run the contents of [`db/schema.sql`](db/schema.sql).
-4. Copy your **Project URL** and **Anon Public Key** (from *Settings -> API*).
+4. Copy your **Project URL** and **Publishable Key** (from *Settings -> API*).
 
 ### 2. GitHub Repository Secrets Setup
 In your GitHub repository, go to **Settings -> Secrets and variables -> Actions** and add the following repository secrets:
@@ -102,7 +102,7 @@ In your GitHub repository, go to **Settings -> Secrets and variables -> Actions*
 | Secret Name | Description | Example |
 |---|---|---|
 | `SUPABASE_URL` | Your Supabase Project URL | `https://xyzcompany.supabase.co` |
-| `SUPABASE_KEY` / `SUPABASE_SERVICE_ROLE_KEY` | Supabase Service Role or Anon Key | `eyJhbGci...` |
+| `SUPABASE_KEY` | Supabase Publishable Key | `eyJhbGci...` |
 | `GEMINI_API_KEY` | Google Gemini API Key | `AIzaSy...` |
 | `TAVILY_API_KEY` | Tavily Search API Key | `tvly-...` |
 | `SMTP_USER` / `GMAIL_USER` | Outbound sender Gmail address | `your-email@gmail.com` |

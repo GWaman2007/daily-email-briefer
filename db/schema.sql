@@ -40,6 +40,12 @@ ALTER TABLE public.profile DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.briefs DISABLE ROW LEVEL SECURITY;
 
+-- Grant full table & schema permissions so the Supabase Publishable Key works out of the box
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+
 -- Initial default singleton profile record (Insert only if not present)
 INSERT INTO public.profile (
     id,
