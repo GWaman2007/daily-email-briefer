@@ -99,6 +99,7 @@ const elements = {
     cfgSupabaseUrl: document.getElementById('cfgSupabaseUrl'),
     cfgSupabaseAnonKey: document.getElementById('cfgSupabaseAnonKey'),
     cfgGeminiKey: document.getElementById('cfgGeminiKey'),
+    cfgGithubRepo: document.getElementById('cfgGithubRepo'),
     cfgMasterPassphrase: document.getElementById('cfgMasterPassphrase'),
     btnClearStoredVault: document.getElementById('btnClearStoredVault'),
 
@@ -573,11 +574,69 @@ function switchBriefTab(tab) {
 }
 
 /**
- * Trigger GitHub Actions workflow dispatch.
+ * Sanitize and normalize a GitHub repository string (owner/repo).
+ */
+function cleanRepoString(repoStr) {
+    if (!repoStr) return '';
+    return repoStr
+        .trim()
+        .replace(/^https?:\/\/github\.com\//i, '')
+        .replace(/\.git$/i, '')
+        .replace(/^\/+|\/+$/g, '');
+}
+
+/**
+ * Resolve target GitHub Repository (owner/repo).
+ * Hierarchy:
+ * 1. Decrypted Vault session keyring (githubRepo)
+ * 2. localStorage override ('dailybriefer_github_repo')
+ * 3. Auto-detected from GitHub Pages URL (https://<owner>.github.io/<repo>/)
+ * 4. Fallback default ('GWaman2007/daily-email-briefer')
+ */
+function getTargetGitHubRepo() {
+    const keys = getSessionKeys();
+    if (keys && keys.githubRepo && keys.githubRepo.trim()) {
+        return cleanRepoString(keys.githubRepo);
+    }
+    const stored = localStorage.getItem('dailybriefer_github_repo');
+    if (stored && stored.trim()) {
+        return cleanRepoString(stored);
+    }
+
+    // Auto-detect when hosted on GitHub Pages: https://<owner>.github.io/<repo>/
+    const hostname = window.location.hostname.toLowerCase();
+    if (hostname.endsWith('.github.io')) {
+        const owner = hostname.replace(/\.github\.io$/, '');
+        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        const repo = pathSegments.length > 0 ? pathSegments[0] : 'daily-email-briefer';
+        return `${owner}/${repo}`;
+    }
+
+    return 'GWaman2007/daily-email-briefer';
+}
+
+/**
+ * Trigger GitHub Actions workflow dispatch on the user's repository.
  */
 function triggerWorkflowDispatch() {
-    window.open('https://github.com/GWaman2007/daily-email-briefer/actions/workflows/daily-brief.yml', '_blank');
-    showToast('Opened GitHub Actions runner page. Click "Run workflow" to execute immediately.', 'info');
+    let repo = getTargetGitHubRepo();
+
+    // If running on a local dev server and pointing to template default, prompt user to set their fork
+    const isLocal = ['localhost', '127.0.0.1', ''].includes(window.location.hostname) || window.location.protocol === 'file:';
+    if (isLocal && repo === 'GWaman2007/daily-email-briefer' && !localStorage.getItem('dailybriefer_github_repo')) {
+        const custom = prompt(
+            'Enter your GitHub repository (owner/repo) to open your fork\'s Actions page:\n(e.g., your-username/daily-email-briefer)',
+            repo
+        );
+        if (custom && custom.trim()) {
+            repo = cleanRepoString(custom);
+            localStorage.setItem('dailybriefer_github_repo', repo);
+        }
+    }
+
+    const workflowUrl = `https://github.com/${repo}/actions/workflows/daily-brief.yml`;
+    window.open(workflowUrl, '_blank');
+    showToast(`Opening GitHub Actions for ${repo}. Click "Run workflow" to execute immediately.`, 'info');
 }
 
 /**
@@ -730,10 +789,11 @@ function setupEventListeners() {
         const supabaseUrl = elements.cfgSupabaseUrl?.value?.trim() || '';
         const supabaseAnonKey = elements.cfgSupabaseAnonKey?.value?.trim() || '';
         const geminiApiKey = elements.cfgGeminiKey?.value?.trim() || '';
+        const githubRepo = cleanRepoString(elements.cfgGithubRepo?.value || '');
         const passphrase = elements.cfgMasterPassphrase?.value || '';
 
         if (!supabaseUrl || !supabaseAnonKey || !geminiApiKey) {
-            showToast('Please fill in Supabase URL, Anon Key, and Gemini API Key.', 'warning');
+            showToast('Please fill in Supabase URL, Publishable Key, and Gemini API Key.', 'warning');
             return;
         }
         if (!passphrase || passphrase.length < 8) {
@@ -745,10 +805,14 @@ function setupEventListeners() {
             supabaseUrl,
             supabaseAnonKey,
             geminiApiKey,
+            githubRepo,
         };
 
         try {
             await encryptVault(passphrase, payload);
+            if (githubRepo) {
+                localStorage.setItem('dailybriefer_github_repo', githubRepo);
+            }
             closeVaultConfigModal();
             if (elements.cfgMasterPassphrase) elements.cfgMasterPassphrase.value = '';
             showToast('Credentials encrypted and stored successfully!', 'success');
@@ -761,6 +825,7 @@ function setupEventListeners() {
     elements.btnClearStoredVault.onclick = () => {
         if (confirm('Are you sure you want to clear your stored encrypted vault from this browser?')) {
             clearVault();
+            localStorage.removeItem('dailybriefer_github_repo');
             closeVaultConfigModal();
             elements.dashboardDeck.classList.add('hidden');
             elements.vaultLockedNotice.classList.remove('hidden');
@@ -956,6 +1021,9 @@ function openVaultConfigModal() {
     elements.cfgSupabaseUrl.value = keys?.supabaseUrl || '';
     elements.cfgSupabaseAnonKey.value = keys?.supabaseAnonKey || '';
     elements.cfgGeminiKey.value = keys?.geminiApiKey || '';
+    if (elements.cfgGithubRepo) {
+        elements.cfgGithubRepo.value = keys?.githubRepo || localStorage.getItem('dailybriefer_github_repo') || (window.location.hostname.toLowerCase().endsWith('.github.io') ? getTargetGitHubRepo() : '');
+    }
     elements.modalVaultConfig.classList.remove('hidden');
 }
 function closeVaultConfigModal() {
