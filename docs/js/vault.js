@@ -158,13 +158,6 @@ export function getSessionKeys() {
 }
 
 /**
- * Update the in-memory session and re-encrypt the stored vault.
- */
-export async function updateVaultPayload(passphrase, updatedPayload) {
-    return await encryptVault(passphrase, updatedPayload);
-}
-
-/**
  * Lock session by erasing secrets from ephemeral RAM.
  */
 export function lockVault() {

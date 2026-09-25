@@ -18,9 +18,6 @@ CREATE TABLE IF NOT EXISTS public.profile (
     updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
--- Idempotent column addition for existing database instances:
-ALTER TABLE public.profile ADD COLUMN IF NOT EXISTS theme TEXT NOT NULL DEFAULT 'light';
-
 -- 2. Event Milestones & Target Reminders
 CREATE TABLE IF NOT EXISTS public.events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

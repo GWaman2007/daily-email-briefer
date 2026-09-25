@@ -35,10 +35,7 @@ let currentBriefDetail = null;
 // DOM Elements
 const elements = {
     // Top Nav
-    navStatusBadge: document.getElementById('navStatusBadge'),
     btnTriggerDispatch: document.getElementById('btnTriggerDispatch'),
-    triggerIcon: document.getElementById('triggerIcon'),
-    triggerText: document.getElementById('triggerText'),
     btnVaultControl: document.getElementById('btnVaultControl'),
     vaultIcon: document.getElementById('vaultIcon'),
     vaultStatusText: document.getElementById('vaultStatusText'),
@@ -79,6 +76,7 @@ const elements = {
     inputFallbackModel: document.getElementById('inputFallbackModel'),
     selectSearchTopic: document.getElementById('selectSearchTopic'),
     selectSearchDepth: document.getElementById('selectSearchDepth'),
+    inputMaxQueries: document.getElementById('inputMaxQueries'),
     selectTheme: document.getElementById('selectTheme'),
     inputPreferencesSummary: document.getElementById('inputPreferencesSummary'),
 

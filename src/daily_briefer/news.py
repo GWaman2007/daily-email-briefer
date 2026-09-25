@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 from urllib.parse import urlparse, urlunparse
 try:
     from tavily import TavilyClient
@@ -23,15 +23,6 @@ class Article:
     content: str
     published_date: Optional[str] = None
     score: float = 0.0
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "title": self.title,
-            "url": self.url,
-            "content": self.content,
-            "published_date": self.published_date,
-            "score": self.score,
-        }
 
 
 def normalize_url(url: str) -> str:
